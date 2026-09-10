@@ -1,0 +1,81 @@
+ACCION ejer ES
+    AMBIENTE
+        SOCIOS = REGISTRO
+            nroSoc: entero
+            nom: AN(30)
+            cat: AN(1)
+            saldoCuota: real
+            estado: AN(1)
+        FR
+
+        arch: ARCHIVO DE SOCIOS ORDENADO POR 'nroSoc'
+        reg: SOCIOS
+
+        opUsuario: caracter
+        nroSocUsuario, contBaja, contM: entero
+        montoAbonado: real
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/S(arch)
+            nroSocUsuario:= 0
+            montoAbonado:= 0.0
+            contBaja:= 0
+            contM:= 0
+        FP
+        
+    PROCESO
+        inic()
+        ESC("¿Desea realizar una operación? S/N")
+        LEER(opUsuario)
+        MIENTRAS (opUsuario = "S") HACER
+            ESC("Ingrese un número de socio")
+            LEER(nroSocUsuario)
+            reg.nroSoc:= nroSocUsuario
+            LEER(arch, reg)
+
+            SI EXISTE ENTONCES
+                ESC("Ingrese tipo de operación")
+                LEER(opUsuario)
+
+                SEGUN (opUsuario) HACER
+                    = "A": ESC("Error: El socio ya está registrado")
+                    = "M":
+                        ESC("Ingrese monto abonado")
+                        LEER(montoAbonado)
+                        reg.saldoCuota:= reg.saldoCuota - montoAbonado
+                        SI (reg.estado = "S") Y (reg.saldoCuota <= 0.0) ENTONCES
+                            reg.estado:= "A"
+                        FS
+                        REGRABAR(arch, reg)
+                        contM:= contM + 1
+                    = "B":
+                        SI (reg.saldoCuota <= 0.0) ENTONCES
+                            ELIMINAR(arch, reg)
+                            contBaja:= contBaja + 1
+                        FS
+                FS
+            SINO
+                ESC("Ingrese tipo de operación")
+                LEER(opUsuario)
+
+                SEGUN (opUsuario) HACER
+                    = "A":
+                        reg.nroSoc:= nroSocUsuario
+                        ESC("Ingrese nombre de socio")
+                        LEER(reg.nom)
+                        ESC("Ingrese categoria")
+                        LEER(reg.cat)
+                        reg.saldoCuota:= 0.0
+                        reg.estado:= "A"                        
+                        GRABAR(arch, reg)
+                    = "M": ESC("Error: Socio inexistente para modificación")
+                    = "B": ESC("Error: Socio inexistente para baja")
+                FS
+            FS
+
+            ESC("Ingrese un número de socio")
+            LEER(nroSocUsuario)
+        FS
+        ESC("El total de pagos registrados es: ", contM, " y las bajas ", contBaja)
+        CERRAR(arch)
+FIN ACCION

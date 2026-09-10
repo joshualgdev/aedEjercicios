@@ -1,0 +1,68 @@
+ACCION ejer ES
+    AMBIENTE
+        claveCue = REGISTRO
+            codSuc: entero
+            nroCue: entero
+        FR
+
+        CUENTAS = REGISTRO
+            clave: claveCue
+            cliente: AN(30)
+            saldo: real
+            estado: AN(1)
+            diasMora: entero
+        FR
+
+        arch: ARCHIVO DE CUENTAS INDEXADO POR clave
+        reg: CUENTAS
+
+        sucUsuario, cantMoro, cantE: entero
+        porUsuario, totSM: real
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/S(arch)
+            sucUsuario:= 0
+            porUsuario:= 0.0
+            cantMoro:= 0
+            totSM:= 0.0
+            cantE:= 0
+        FP
+
+        PROCEDIMIENTO emitirTot() ES
+            ESC("Cant morosas ", cantMoro, " total saldo morosas ", totSM, " cant. cuentas eliminadas ", cantE)
+        FP
+        
+    PROCESO
+        inic()
+        ESC("Ingrese sucursal a procesar")
+        LEER(sucUsuario)
+        ESC("Ingrese porcentaje recargo")
+        LEER(porUsuario)
+
+        reg.clave.codSuc:= sucUsuario
+        reg.clave.nroCue:= 0
+        LEER(arch, reg)
+
+        SI EXISTE ENTONCES
+            MIENTRAS NFDA(arch) Y (reg.clave.codSuc = sucUsuario) HACER
+                SI (reg.estado = "M") ENTONCES
+                    reg.saldo:= reg.saldo * (1 + porUsuario / 100)
+                    REGRABAR(arch, reg)
+                    cantMoro:= cantMoro + 1
+                    totSM:= totSM + reg.saldo
+                SINO
+                    SI (reg.estado = "C") ENTONCES
+                        SI (reg.saldo = 0.0) ENTONCES
+                            ELIMINAR(arch, reg)
+                            cantE:= cantE + 1
+                        FS
+                    FS
+                FS
+            FM
+            LEER(arch, reg)
+        SINO
+            ESC("Error: La sucursal especificada no existe o no posee cuentas registradas")
+        FS
+        emititTot()
+        CERRAR(arch)
+FIN ACCION

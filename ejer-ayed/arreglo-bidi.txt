@@ -1,0 +1,185 @@
+ACCION ejer ES
+    AMBIENTE
+        mat: ARREGLO [1..3, 1..3] DE entero
+        i, j: entero
+        suma: entero
+        
+    PROCESO
+        suma:= 0
+        PARA (i:= 1 HASTA 3) HACER
+            PARA (j:= 1 HASTA 3) HACER
+                ESC("Ingrese valores")
+                LEER(mat[i, j])
+                suma:= suma + mat[i, j]
+            FP
+        FP
+        ESC("La suma es ", suma)
+FIN ACCION
+
+ACCION ejer2 ES
+    AMBIENTE
+        mat: ARREGLO DE [1..3, 1..3, 1..3] DE entero
+        i, j: entero
+        suma, cont: entero
+        
+    PROCESO
+        suma:= 0
+        cont:= 0
+        PARA (i:= 1 HASTA 3) HACER
+            PARA (j:= 1 HASTA 3) HACER
+                ESC("Ingrese valores")
+                LEER(mat[i, j])
+                SI (mat[i, j] MOD 2 = 0) ENTONCES
+                    suma:= suma + mat[i, j]
+                    cont:= cont + 1
+                FS
+            FP
+        FP
+FIN ACCION
+
+ACCION ejer3 ES
+    AMBIENTE
+        mat: ARREGLO DE [1..3, 1..3] DE entero
+        i, j: entero
+        
+    PROCESO
+        suma:= 0
+        cont:= 0
+        PARA (i:= 1 HASTA 3) HACER
+            PARA (j:= 1 HASTA 3) HACER
+                ESC("Ingrese valores")
+                LEER(mat[i, j])
+            FP
+        FP
+
+        PARA (i:= 1 HASTA 3) HACER
+            SI (mat[i,i])
+FIN ACCION
+
+ACCION ejer4 ES
+    AMBIENTE
+        notas: ARREGLO [1..5] DE real
+        i, j, suma, cont: entero
+        promNotas: real
+        
+    PROCESO
+        cont:= 0
+        suma:= 0
+        promNotas:= 0.0
+        PARA (i:= 1 HASTA 5) HACER
+            PARA (j:= 1 HASTA 5) HACER
+                ESC("Ingrese las notas")
+                LEER(notas[i, j])
+                suma:= suma + notas[i, j]
+            FIN PARA
+        FIN PARA
+
+        promNotas:= suma / 5
+        
+        PARA (i:= 1 HASTA 5) HACER
+            PARA (j:= 1 HASTA 5) HACER
+                SI (notas[i, j] > promNotas) ENTONCES
+                    cont:= cont + 1
+                FS
+            FIN PARA
+        FIN PARA
+
+        ESC("El promedio es ", promNotas, " y la cantidad de alumnos que lo superaron fue ", cont)
+FIN ACCION
+
+ACCION ejer5 ES
+    AMBIENTE
+        A: ARREGLO [1..5] DE entero
+        bandera: logico
+        aux, i, j: entero
+        
+    PROCESO
+        PARA (i:= 1 HASTA 5) HACER
+            ESC("Carga el arreglo")
+            LEER(A[i])
+        FP
+
+        bandera:= falso
+        MIENTRAS NO bandera HACER
+            bandera:= verdadero
+            PARA (j:= 1 HASTA 4) HACER
+                SI (A[j] > A[j+1]) ENTONCES
+                    aux:= A[j]
+                    A[j]:= A[j+1]
+                    A[j+1]:= aux
+                    bandera:= falso
+                FS
+            FP
+        FM
+FIN ACCION
+
+ACCION ejer6 ES
+    AMBIENTE
+        edades: ARREGLO [1..5] DE entero
+        aux: entero
+        bandera: logico
+        i, j: entero // CORREGIDO: Declaración de índices i y j
+
+    PROCESO
+        // 1. Carga del arreglo
+        PARA i:= 1 HASTA 5 HACER
+            ESC("Ingrese edad de la persona [", i, "]:")
+            LEER(edades[i])
+        FIN_PARA // CORREGIDO: Cierre formal FIN_PARA
+
+        // 2. Ordenamiento por Burbuja
+        bandera:= falso
+        MIENTRAS NO bandera HACER
+            bandera:= verdadero
+            PARA j:= 1 HASTA 4 HACER
+                // CORREGIDO: Ahora el intercambio SOLO ocurre si están desordenados
+                SI (edades[j] > edades[j+1]) ENTONCES 
+                    // Intercambio seguro usando "edades" (no "A")
+                    aux:= edades[j]
+                    edades[j]:= edades[j+1]
+                    edades[j+1]:= aux
+                    
+                    // Como tuvimos que ordenar algo, apagamos la bandera para re-verificar
+                    bandera:= falso 
+                FS
+            FIN_PARA // CORREGIDO: Cierre formal FIN_PARA
+        FIN_MIENTRAS // CORREGIDO: Cierre formal FIN_MIENTRAS
+
+        // 3. Emisión del vector ordenado
+        ESC("========================================")
+        ESC("Edades ordenadas de menor a mayor:")
+        PARA i:= 1 HASTA 5 HACER
+            ESC(edades[i])
+        FIN_PARA // CORREGIDO: Cierre formal FIN_PARA
+FIN ACCION
+
+ACCION ejer7 ES
+    AMBIENTE
+        puntajes: ARREGLO [1..5] DE entero
+        bandera: logico
+        aux: entero
+        
+    PROCESO
+        PARA (i:= 1 HASTA 5) HACER
+            ESC("Ingrese puntajes")
+            LEER(puntajes[i])
+        FP
+
+        bandera:= falso
+        MIENTRAS NO bandera HACER
+            bandera:= verdadero
+            PARA (j:= 1 HASTA 4) HACER
+                SI (puntajes[i] > puntajes[i+1]) ENTONCES
+                    aux:= puntajes[i]
+                    puntajes[i]:= puntajes[i+1]
+                    puntajes[i+1]:= aux
+                    bandera:= falso
+                FS
+            FP
+        FM
+
+        ESC("Lista de puntajes")
+        PARA(i:= 1 HASTA 5) HACER
+            ESC(puntajes[i])
+        FP
+FIN ACCION

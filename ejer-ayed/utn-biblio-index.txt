@@ -1,0 +1,135 @@
+ACCION ejer_indexado_batch_biblioteca ES
+    AMBIENTE
+        LIBROS = REGISTRO
+            isbn: entero
+            tit: AN(30)
+            stockD: entero
+            cantP: entero
+            est: AN(1) // 'A' (Activo), 'B' (Baja Lógica)
+        FR
+
+        arch: ARCHIVO DE LIBROS INDEXADO POR isbn
+        reg: LIBROS
+
+        NOVEDADES = REGISTRO
+            isbn: entero
+            codOp: AN(1) // 'A', 'P', 'D', 'B'
+            tit: AN(30)
+            cant: entero
+        FR
+
+        archMov: ARCHIVO DE NOVEDADES ORDENADO POR isbn
+        regMov: NOVEDADES
+
+        contPR, contBE: entero
+
+        PROCEDIMIENTO leerMov() ES
+            LEER(archMov, regMov)
+            SI FDA(archMov) ENTONCES
+                regMov.isbn:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/S(arch)
+            ABRIR E/(archMov)
+            leerMov()
+            contPR:= 0
+            contBE:= 0
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+            CERRAR(archMov)
+        FP
+
+        PROCEDIMIENTO procesarAlta() ES
+            reg.isbn:= regMov.isbn
+            reg.tit:= regMov.tit
+            reg.stockD:= regMov.cant
+            reg.cantP:= 0
+            reg.est:= "A"
+
+            GRABAR(arch, reg)
+        FP
+
+        PROCEDIMIENTO procesarPrestamo() ES
+            SI (reg.est = "A") Y (reg.stockD >= regMov.cant) ENTONCES
+                reg.stockD:= reg.stockD - regMov.cant
+                reg.cantP:= reg.cantP + regMov.cant
+
+                REGRABAR(arch, reg) // Corregido: Regraba en el maestro
+            SINO
+                ESC("Error: Préstamo rechazado por stock insuficiente o baja lógica: ", regMov.isbn)
+                contPR:= contPR + 1
+            FS
+        FP
+
+        PROCEDIMIENTO procesarDevolucion() ES
+            SI (reg.cantP >= regMov.cant) ENTONCES
+                reg.cantP:= reg.cantP - regMov.cant
+                reg.stockD:= reg.stockD + regMov.cant
+
+                REGRABAR(arch, reg)
+            SINO
+                ESC("Error: Cantidad a devolver invalida: ", regMov.isbn)
+            FS
+        FP
+
+        PROCEDIMIENTO procesarBaja() ES
+            SI (reg.cantP = 0) ENTONCES
+                ELIMINAR(arch, reg) // Baja física
+                contBE:= contBE + 1
+            SINO
+                // Baja lógica si debe libros
+                reg.est:= "B"
+                REGRABAR(arch, reg)
+                ESC("Atención: Libro con préstamos pendientes. Se pasa a Baja Lógica: ", regMov.isbn)
+            FS
+        FP
+
+        PROCEDIMIENTO emitirInforme() ES
+            ESC("========================================")
+            ESC("Cantidad de préstamos rechazados: ", contPR)
+            ESC("Cantidad de bajas físicas efectivas: ", contBE)
+            ESC("========================================")
+        FP
+
+    PROCESO
+        inic()
+
+        MIENTRAS (regMov.isbn <> HV) HACER
+            reg.isbn:= regMov.isbn
+            LEER(arch, reg)
+
+            SI EXISTE ENTONCES
+                SEGUN (regMov.codOp) HACER
+                    "A":
+                        ESC("Error: El ISBN ya se encuentra registrado: ", regMov.isbn)
+                    "P":
+                        procesarPrestamo()
+                    "D":
+                        procesarDevolucion()
+                    "B":
+                        procesarBaja()
+                FS
+            SINO
+                SEGUN (regMov.codOp) HACER
+                    "A":
+                        procesarAlta()
+                    "P":
+                        ESC("Error: Libro inexistente para préstamo: ", regMov.isbn)
+                        contPR:= contPR + 1
+                    "D":
+                        ESC("Error: Libro inexistente para devolución: ", regMov.isbn)
+                    "B":
+                        ESC("Error: Libro inexistente para baja: ", regMov.isbn)
+                FS
+            FS
+
+            leerMov() // Avanza obligatoriamente a la siguiente novedad
+        FM
+
+        emitirInforme()
+        fina()
+FIN ACCION

@@ -1,0 +1,25 @@
+ACCION ejer ES
+    AMBIENTE
+        nombres: ARREGLO [1..5] DE AN(30)
+        ventas: ARREGLO [1..5] DE real
+        
+    PROCESO
+        PARA (i:= 1 HASTA 5) HACER
+            ESC("Ingrese nombre")
+            LEER(nombres[i])
+            ESC("Ingrese ventas")
+            LEER(ventas[i])
+        FP
+
+        PARA (i:= 1 HASTA 5) HACER
+            montoTotal:= montoTotal + ventas[i]
+            SI (ventas[i] > max) ENTONCES
+                max:= ventas[i]
+                topVendedor:= nombres[i]
+            FS
+        FP
+
+        MIENTRAS (i < 5) Y ()
+
+        ESC("El monto total fue ", montoTotal, " el máximo vendedor fue ", topVendedor, " con un max de ", max)
+FIN ACCION

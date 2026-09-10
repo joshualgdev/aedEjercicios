@@ -1,0 +1,31 @@
+ACCION ejer ES
+    AMBIENTE
+        A: ARREGLO [1..5] DE entero
+        i, j, posMin, aux: entero
+
+    PROCESO
+        posMin:= 0
+        aux:= 0
+        PARA (i:= 1 HASTA 5) HACER
+            ESC("Ingrese los números")
+            LEER(A[i])
+        FIN PARA
+
+        PARA (i:= 1 HASTA 4) HACER
+            posMin:= i
+
+            PARA (j:= i+1 HASTA 5) HACER
+                SI (A[j] < A[posMin]) ENTONCES
+                    posMin:= j
+                FS
+            FP
+
+            aux:= A[i]
+            A[i]:= A[posMin]
+            A[posMin]:= aux
+        FP
+FIN ACCION
+
+Método de Inserción Directa
+
+

@@ -1,0 +1,83 @@
+ACCION ejer ES
+    AMBIENTE
+        ARTICULOS = REGISTRO
+            codArt: entero
+            desc: AN(30)
+            stock: entero
+            precio: real
+        FR
+
+        NOVEDADES = REGISTRO
+            codArt: entero
+            codOp: AN(1)
+            desc: AN(30)
+            cant: entero
+            precio: real
+        FR
+
+        arch: ARCHIVO DE ARTICULOS INDEXADO POR codArt
+        reg: ARTICULOS
+
+        archMov: ARCHIVO DE NOVEDADES ORDENADO POR codArt
+        regMov: NOVEDADES
+
+        contSI: entero
+
+        PROCEDIMIENTO leerMov() ES
+            LEER(archMov, regMov)
+            SI FDA(archMov) ENTONCES
+                regMov.codArt:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/S(arch)
+            ABRIR E/(archMov)
+            leerMov()
+            contSI:= 0
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+            CERRAR(archMov)
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS (regMov.codArt <> HV) HACER
+            reg.codArt:= regMov.codArt
+            LEER(arch, reg)
+
+            SI EXISTE ENTONCES
+                SEGUN (regMov.codOp) HACER
+                    = "A": ESC("Error: Artículo existente")
+                    = "M":
+                        reg.stock:= reg.stock + regMov.cant
+                        SI (reg.stock < 0) ENTONCES
+                            ESC("Error: Stock insuficiente")
+                            contSI:= contSI + 1
+                        SINO
+                            REGRABAR(arch, reg)
+                        FS
+                    = "B":
+                        SI (reg.stock = 0) ENTONCES
+                            ELIMINAR(arch, reg)
+                        SINO
+                            ESC("Error: No se puede eliminar con stock positivo")
+                        FS
+                FS
+            SINO
+                SEGUN (regMov.codOp) HACER
+                    = "A":
+                        reg.stock:= regMov.cant
+                        GRABAR(arch, reg)
+                    FS
+                    = "M": ESC("No existe artículo para modificación")
+                    = "B": ESC("No existe artículo para eliminar")
+                FS
+            FS
+            leerMov()
+        FM
+        ESC("Stock insuficiente ", contSI)
+        fina()
+FIN ACCION

@@ -1,0 +1,111 @@
+ACCION ejer ES
+    AMBIENTE
+        MEDICAMENTOS = REGISTRO
+            codMed: entero
+            nomMed: AN(30)
+            stockAct: entero
+            precio: real
+            estado: AN(1)
+        FR
+
+        MOVIMIENTOS = REGISTRO
+            codMed: entero
+            codOp: AN(1)
+            nomMed: AN(30)
+            cant: entero
+            precio: real
+        FR
+
+        arch: ARCHIVO DE MEDICAMENTOS INDEXADO POR codMed
+        reg: MEDICAMENTOS
+
+        archMov: ARCHIVO DE MOVIMIENTOS ORDENADO POR codMed
+        regMov: MOVIMIENTOS
+
+        contVF, contBE: entero
+
+        PROCEDIMIENTO leerMov() ES
+            LEER(archMov, regMov)
+            SI FDA(archMov) ENTONCES
+                regMov.codMed:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/S(arch)
+            ABRIR E/(archMov)
+            leerMov()
+            contVF:= 0
+            contBE:= 0
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+            CERRAR(archMov)
+        FP
+
+        PROCEDIMIENTO emitTot() ES
+            ESC("Cantidad de ventas fallidas ", contVF)
+            ESC("Cantidad de bajas efectivas ", contBE)
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS (regMov.codMed <> HV) HACER
+            regM.codMed:= regMov.codMed
+            LEER(arch, reg)
+
+            SI EXISTE ENTONCES
+                SEGUN (regMov.codOp) HACER
+                    = "A": ESC("Error: Medicamento ya existente")
+                    = "V":
+                        SI (reg.estado = "A") Y (reg.stockAct >= regMov.cant) ENTONCES
+                            reg.stockAct:= reg.stockAct - regMov.cant
+                            SI (reg.stockAct = 0.0) ENTONCES
+                                reg.estado:= "S"
+                            FS
+                            REGRABAR(arch, reg)
+                        SINO
+                            ESC("Error")
+                            contVF:= contVF + 1
+                        FS
+                    = "R":
+                        reg.stockAct:= reg.stockAct + regMov.cant
+                        SI (regMov.precio > 0.0) ENTONCES
+                            reg.precio:= regMov.precio
+                        FS
+                        SI (reg.estado = "S") Y (reg.stockAct > 0) ENTONCES
+                            reg.estado:= "A"
+                        FS
+                        REGRABAR(arch, reg)
+                    = "B":
+                        SI (reg.stockAct = 0) ENTONCES
+                            ELIMINAR(arch, reg)
+                            contBE:= contBE + 1
+                        SINO
+                            SI (reg.stockAct > 0) ENTONCES
+                                ESC("Error: No se puede eliminar medicamento con stock positivo")
+                            FS
+                        FS
+                FS
+            SINO
+                SEGUN (regMov.codOp) HACER
+                    = "A":
+                        reg.nomMed:= regMov.nomMed
+                        reg.stockAct:= regMov.cant
+                        reg.precio:= regMov.precio
+                        reg.estado:= "A"
+                        GRABAR(arch, reg)
+                    = "V":
+                        ESC("Error: Medicamento inexistente para venta")
+                        contVF:= contVF + 1
+                    = "R": ESC("Error: Medicamento inexistente para reposición")
+                    = "B": ESC("Error: Medicamento inexistente para baja")
+                FS
+            FS
+
+            leerMov()
+        FM
+        emitTot()
+        fina()
+FIN ACCION

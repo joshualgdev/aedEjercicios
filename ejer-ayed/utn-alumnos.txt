@@ -1,0 +1,62 @@
+ACCION ejer ES
+    AMBIENTE
+        ALUMNOS = REGISTRO
+            leg: entero
+            nom: AN(30)
+            prom: real
+            est: AN(1)
+        FR
+
+        arch: ARCHIVO DE ALUMNOS INDEXADO POR leg
+        reg: ALUMNOS
+
+        legUsu: entero
+        opUsu, codOp: caracter
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/S(arch)
+            legUsu:= 0
+        FP
+        
+    PROCESO
+        inic()
+        ESC("¿Desea realizar una operación? S/N")
+        LEER(opUsu)
+
+        MIENTRAS (opUsu = "S") HACER
+            ESC("Ingrese legajo a procesar")
+            LEER(legUsu)
+            ESC("Ingrese operación a realizar")
+            LEER(codOp)
+
+            reg.leg:= legUsu
+            LEER(arch, reg)
+
+            SI EXISTE ENTONCES
+                SEGUN (codOp) HACER
+                    = "A": ESC("Error papi, esto ya existe")
+                    = "M":
+                        ESC("Ingrese nuevo promedio")
+                        LEER(reg.prom)
+                        REGRABAR(arch, reg)
+                    = "B":
+                        ELIMINAR(arch, reg)
+                FS
+            SINO
+                SI (codOp = "A") ENTONCES
+                    ESC("Ingrese nombre")
+                    LEER(reg.nom)
+                    ESC("Ingrese promedio")
+                    LEER(reg.prom)
+                    ESC("Ingrese estado")
+                    LEER(reg.est)
+                    GRABAR(arch, reg)
+                SINO
+                    ESC("Código de operación no válido")
+                FS
+            FS
+            ESC("¿Desea realizar una operación? S/N")
+            LEER(opUsu)
+        FM
+        CERRAR(arch)
+FIN ACCION

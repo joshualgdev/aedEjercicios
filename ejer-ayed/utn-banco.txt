@@ -1,0 +1,94 @@
+ACCION ejer ES
+    AMBIENTE
+        CUENTAS = REGISTRO
+            nroCue: entero
+            tit: AN(30)
+            saldo: real
+            est: AN(1)
+        FR
+
+        arch: ARCHIVO DE CUENTAS INDEXADO POR nroCue
+        reg: nroCue
+
+        contB, contE: entero
+
+        MOVIMIENTOS = REGISTRO
+            nroCue: entero
+            codOp: AN(1)
+            monto: real
+            tit: AN(30)
+        FR
+
+        archMov: ARCHIVO DE MOVIMIENTOS ORDENADO POR nroCue
+        regMov: MOVIMIENTOS
+
+        PROCEDIMIENTO leerMov() ES
+            LEER(archMov, regMov)
+            SI FDA(archMov) ENTONCES
+                regMov.nroCue:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/S(arch)
+            ABRIR E/(archMov)
+            leerMov()
+            contE:= 0
+            contB:= 0
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+            CERRAR(archMov)
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS (regMov.nroCue <> HV) HACER
+            reg.clave:= regMov.clave
+            LEER(arch, reg)
+
+            SI EXISTE ENTONCES
+                SEGUN (regMov.codOp) HACER
+                    = "A": ESC("Error: Alta duplicada para la cuenta")
+                    = "D":
+                        reg.saldo:= reg.saldo + regMov.monto
+                        SI (reg.est = "S") Y (reg.saldo >= 0.0) ENTONCES
+                            reg.est:= "A"
+                        FS
+                        REGRABAR(arch, reg)
+                    = "E":
+                        SI (reg.est = "A") ENTONCES
+                            SI ((reg.saldo - regMov.monto) >= -5000.0) ENTONCES
+                                reg.saldo:= reg.saldo - regMov.monto
+                            FS
+                            SI (reg.saldo < 0.0) ENTONCES
+                                reg.est:= "S"
+                            SINO
+                                contE:= contE + 1
+                            FS
+                            REGRABAR(arch, reg)
+                        SINO
+                            contE:= contE + 1
+                        FS
+                    = "B":
+                        SI (reg.saldo = 0.0) ENTONCES
+                            ELIMINAR(arch, reg)
+                            contB:= contB + 1
+                        SINO
+                            ESC("Error: No se puede dar de baja una cuenta con saldo pendiente")
+                        FS
+                FS
+            SINO
+                SEGUN (regMov.codOp) HACER
+                    = "A":
+                    = "D": ESC("Error: Cuenta inexistente para depósito")
+                    = "E": ESC("Error: Cuenta inexistente para extracción")
+                    = "B": ESC("Error: Cuenta inexistente para baja")
+                FS
+            FS
+        FM
+        ESC("Cant. operaciones rechazadas ", contE)
+        ESC("Cant. bajas efectivas ", contB)
+        fina()
+FIN ACCION

@@ -1,0 +1,58 @@
+ACCION ejer ES
+    AMBIENTE
+        temp = ARREGLO [1..7] DE real
+        
+    PROCESO
+        PARA (i:= 1 HASTA 7) HACER
+            ESC("Ingrese la temperatura para el día ", i)
+            LEER(temp[i])
+
+            suma:= suma + temp[i]
+
+            SI (temp[i] < max) ENTONCES
+                max:= temp[i]
+                dia:= i
+            FS
+        FP
+        prom:= suma / 7
+        ESC("la temp minima fue de ", max, " el día ", dia)
+FIN ACCION
+
+ACCION ejer ES
+    AMBIENTE
+        prod: ARREGLO [1..10] DE entero
+        
+    PROCESO
+        PARA (i:= 1 HASTA 10) HACER
+            ESC("Carga el arreglo papu! ")
+            LEER(prod[i])
+
+            ESC("Ahora ingresa el código secreto")
+            LEER(codSecreto)
+            i:= codSecreto
+            MIENTRAS (i < N) Y (prod[i] <> x) HACER
+                i:= i + 1
+            FM
+
+            SI (A[i] = x) ENTONCES
+                ESC("lo encontraste papu ", i)
+            SINO
+                ESC("no está :'(, como el papá de nelson")
+            FS
+            
+        FP
+
+        
+FIN ACCION
+
+
+PARA (i:= 1 HASTA 5) HACER
+    ESC("Ingrese el valor ", i)
+    LEER(v[i])
+
+    
+FP
+
+PARA (i:= 1 HASTA 4) HACER
+    
+FP

@@ -1,0 +1,121 @@
+ACCION ejer_indexado_modular ES
+    AMBIENTE
+        ARTICULOS = REGISTRO
+            codArt: entero
+            desc: AN(30)
+            precioU: real
+            stock: entero
+        FR
+
+        arch: ARCHIVO DE ARTICULOS INDEXADO POR codArt
+        reg: ARTICULOS
+
+        // Variables de control global e interacción
+        op, codOp: caracter
+        codArtUsuario: entero
+        cantAltas: entero
+
+        // SUBACCION 1: Inicialización del ambiente
+        PROCEDIMIENTO inic() ES
+            ABRIR E/S(arch)
+            cantAltas:= 0
+        FP
+
+        // SUBACCION 2: Cierre de archivos
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+        FP
+
+        // SUBACCION 3: Módulo exclusivo para ALTA
+        PROCEDIMIENTO procesarAlta() ES
+            ESC("--- ALTA DE NUEVO PRODUCTO ---")
+            ESC("Ingrese Descripción:")
+            LEER(reg.desc)
+            ESC("Ingrese Precio Unitario:")
+            LEER(reg.precioU)
+            ESC("Ingrese Stock Inicial:")
+            LEER(reg.stock)
+
+            // reg.codArt ya fue cargado previamente para consultar el índice
+            GRABAR(arch, reg)
+            cantAltas:= cantAltas + 1
+            ESC(">> Producto registrado exitosamente.")
+        FP
+
+        // SUBACCION 4: Módulo exclusivo para MODIFICACION
+        PROCEDIMIENTO procesarModificacion() ES
+            variacionStock: entero
+            nuevoPrecio: real
+
+            ESC("--- MODIFICACION DE PRODUCTO ---")
+            ESC("Descripción actual: ", reg.desc)
+            ESC("Ingrese nuevo precio unitario:")
+            LEER(nuevoPrecio)
+            ESC("Ingrese variación de stock (positiva para sumar, negativa para restar):")
+            LEER(variacionStock)
+
+            reg.precioU:= nuevoPrecio
+            reg.stock:= reg.stock + variacionStock
+
+            REGRABAR(arch, reg)
+            ESC(">> Registro actualizado in-situ en disco.")
+        FP
+
+        // SUBACCION 5: Módulo exclusivo para BAJA
+        PROCEDIMIENTO procesarBaja() ES
+            ELIMINAR(arch, reg)
+            ESC(">> Producto eliminado físicamente del maestro.")
+        FP
+
+        // SUBACCION 6: Emisión de informes y estadísticas
+        PROCEDIMIENTO emitirInforme() ES
+            ESC("========================================")
+            ESC("PROCESO INTERACTIVO FINALIZADO")
+            ESC("Cantidad total de altas exitosas: ", cantAltas)
+            ESC("========================================")
+        FP
+
+    PROCESO
+        inic()
+        
+        ESC("¿Desea iniciar el proceso de edición? S (sí) / N (no):")
+        LEER(op)
+
+        MIENTRAS (op = 'S') O (op = 's') HACER
+            ESC("Ingrese el código de artículo a procesar:")
+            LEER(codArtUsuario)
+            
+            // Carga de la clave y consulta puntual al área de índices
+            reg.codArt:= codArtUsuario
+            LEER(arch, reg)
+
+            ESC("Ingrese tipo de operación (A: Alta, M: Modificación, B: Baja):")
+            LEER(codOp)
+
+            SI EXISTE ENTONCES
+                SEGUN (codOp) HACER
+                    'A', 'a':
+                        ESC("Error: El código de artículo ya existe en el maestro.")
+                    'M', 'm':
+                        procesarModificacion() // Invocación modular
+                    'B', 'b':
+                        procesarBaja()         // Invocación modular
+                FS
+            SINO
+                SEGUN (codOp) HACER
+                    'A', 'a':
+                        procesarAlta()         // Invocación modular
+                    'M', 'm':
+                        ESC("Error: El producto no existe para ser modificado.")
+                    'B', 'b':
+                        ESC("Error: El producto no existe para ser eliminado.")
+                FS
+            FS
+
+            ESC("¿Desea ingresar otra operación? S (sí) / N (no):")
+            LEER(op)
+        FM
+
+        emitirInforme()
+        fina()
+FIN ACCION

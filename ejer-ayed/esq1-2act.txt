@@ -1,0 +1,199 @@
+ACCION ejer ES
+    AMBIENTE
+        LIBROS = REGISTRO
+            codLib: entero
+            tit: AN(30)
+            aut: AN(30)
+            stockT: entero
+            ejPresta: entero
+            precioRef: real
+            est: AN(1)
+        FR
+
+        arch: ARCHIVO DE LIBROS INDEXADO POR codLib
+        reg: LIBROS
+
+        opUsuario, codOp movUsu: caracter
+        codUsuario, contA, contBF: entero
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/S(arch)
+            codUsuario:= 0
+            contA:= 0
+            contBF:= 0
+        FP
+        
+    PROCESO
+        inic()
+        ESC("¿Desea realizar una operación? S/N")
+        LEER(opUsuario)
+
+        MIENTRAS (opUsuario = "S") HACER
+            ESC("Ingrese código de libro")
+            LEER(codUsuario)
+            ESC("Ingrese operación a realizar")
+            ESC(codOp)
+
+            reg.codLib:= codUsuario
+            LEER(arch, reg)
+
+            SI EXISTE ENTONCES
+                SEGUN (codOp) HACER
+                    = "A": ESC("Error: Libro ya registrado con código " + reg.codLib)
+                    = "M":
+                        ESC("Ingrese movimiento: P (prestamo) o D (devolucion)")
+                        LEER(movUsu)
+                        SI (movUsu = "P") ENTONCES
+                            SI (reg.est = "A") Y ((reg.stockT - reg.ejPresta) >= 1) ENTONCES
+                                reg.ejPresta:= reg.ejPresta + 1
+                                REGRABAR(arch, reg)
+                                contPR:= contPR + 1
+                            SINO
+                                ESC("Error: Sin disponibilidad para préstamo")
+                            FS
+                        SINO
+                            SI (reg.ejPresta > 0) ENTONCES
+                                reg.ejPresta:= reg.ejPresta - 1
+                                REGRABAR(arch, reg)
+                            SINO
+                                SI (reg.ejPresta = 0) ENTONCES
+                                    ESC("Error: No figuran ejemplares prestados para devolver")
+                                FS
+                            FS
+                    = "B":
+                        SI (reg.ejPresta = 0) Y (reg.stockT = 0) ENTONCES
+                            ELIMINAR(arch, reg)
+                            contBF:= contBF + 1
+                        SINO
+                            SI (reg.ejPresta = 0) Y (reg.stockT > 0) ENTONCES
+                                reg.est:= "D"
+                                REGRABAR(arch, reg)
+                                contBF:= contBF + 1
+                            SINO
+                                SI (reg.ejPresta > 0) ENTONCES
+                                    ESC("Error: Imposible dar de baja. Existen ejemplares prestados")
+                                FS
+                            FS
+                        FS
+                FS
+            SINO
+                SEGUN (codOp) HACER
+                    = "A":
+                        ESC("Ingrese título")
+                        LEER(reg.tit)
+                        ESC("Ingrese autor")
+                        LEER(reg.aut)
+                        ESC("Ingrese stock total")
+                        LEER(reg.stockT)
+                        ESC("Ingrese precio ref")
+                        LEER(reg.precioRef)
+                        reg.ejPresta:= 0
+                        reg.est:= "A"
+                        GRABAR(arch, reg)
+                        contA:= contA + 1
+                    = "M": ESC("Error: Libro no encontrado para modificar")
+                    = "B": ESC("Error: Libro no encontrado para baja")
+                FS
+            FS
+            
+            ESC("¿Desea seguir realizando operaciones? S/N")
+            LEER(opUsuario)
+        FM
+        ESC("Cantidad de altas ", contA, " cantidad de bajas ", contBF)
+        CERRAR(arch)
+FIN ACCION
+
+ACCION ejer2 ES
+    AMBIENTE
+        TARJETAS = REGISTRO
+            nroTar: entero
+            tit: AN(35)
+            limCre: real
+            saldoAct: real
+            est: AN(1)
+        FR
+
+        arch: ARCHIVO DE TARJETAS INDEXADO POR nroTar
+        reg: TARJETAS
+
+        NOVEDADES = REGISTRO
+            nroTar: entero
+            codOp: AN(1)
+            tit: AN(35)
+            limCre: real
+            montoOp: real
+        FR
+
+        archMov: ARCHIVO DE NOVEDADES ORDENADO POR nroTar
+        regMov: NOVEDADES
+
+        monTC: real
+        contCR, montB, contA: entero
+
+        PROCEDIMIENTO leerNov() ES
+            LEER(archMov, regMov)
+            SI FDA(archMov) ENTONCES
+                regMov.nroTar:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/S(arch)
+            ABRIR E/(archMov)
+            leerMov()
+            monTC:= 0.0
+            contCR:= 0
+            montB:= 0
+            contA:= 0
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+            CERRAR(archMov)
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS (regMov.nroTar <> HV) HACER
+            reg.nroTar:= regMov.nroTaj
+            LEER(arch, reg)
+            SI EXISTE ENTONCES
+                SEGUN (regMov.codOp) HACER
+                    = "A": ESC("Error: Tarjeta ya existente: " + regNov.nroTar)
+                    = "C":
+                        SI (reg.est = "A") Y (reg.saldoAct + regMov.montoOp <= regMov.limCre) ENTONCES
+                            reg.saldoAct:= reg.saldoAct + regMov.montoOp
+                            REGRABAR(arch, reg)
+                            monTC:= monTC + regMov.montoOp
+                        SINO
+                            ESC("Error: Consumo rechazado por falta de límite o tarjeta bloqueada: " + regMov.nroTar")
+                            contCR:= contCR + 1
+                        FS
+                    = "B":
+                        reg.est:= "B"
+                        REGRABAR(arch, reg)
+                        contB:= contB + 1
+                    = "P":
+                        reg.saldoAct:= reg.saldoAct - regMov.montoOp
+                        REGRABAR(arch, reg)
+                        monTC:= monTC + 1
+                FS
+            SINO
+                SEGUN (regMov.codOp) HACER
+                    = "A":
+                        reg.tit:= regMov.tit
+                        reg.limCre:= regMov.limCre
+                        reg.saldoAct:= 0.0
+                        reg.est:= "A"
+                        GRABAR(arch, reg)
+                        contA:= contA + 1
+                    = "C": ESC("Error: Tarjeta inexistente para consumo: " + regNov.nroTar)
+                    = "B": ESC("Error: Tarjeta inexistente para bloqueo: " + regNov.nroTar)
+                    = "P": ESC("Error: Tarjeta inexistente para pago: " + regNov.nroTar)
+                FS
+            FS
+            leerMov()
+        FM
+        ESC("La cantidad de monto total consumos ", monTC, " consumo rechazados ", contCR, " contador altas ", contA)
+        fina()
+FIN ACCION

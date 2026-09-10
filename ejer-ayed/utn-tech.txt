@@ -1,0 +1,68 @@
+ACCION ejer ES
+    AMBIENTE
+        claveProy = REGISTRO
+            codDep: entero
+            idProy: entero
+        FR
+
+        PROYECTOS = REGISTRO
+            clave: claveProy
+            nomProy: AN(30)
+            pres: real
+            est: AN(1)
+            cantI: entero
+        FR
+
+        arch: ARCHIVO DE PROYECTOS INDEXADO POR clave
+        reg: PROYECTOS
+
+        depUsuario, cantAct, cantE: entero
+        porUsuario, totPres: real
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/S(arch)
+            depUsuario:= 0
+            cantAct:= 0
+            cantE:= 0
+            porUsuario:= 0.0
+            totPres:= 0.0
+        FP
+
+        PROCEDIMIENTO emitirTot() ES
+            ESC("Cant act ", cantAct)
+            ESC("Total presupuesto ", totPres)
+            ESC("Cant eliminados ", cantE)
+        FP
+        
+    PROCESO
+        ESC("Ingrese código de departamento")
+        LEER(depUsuario)
+        ESC("Ingrese porcentaje de aumento")
+        LEER(porUsuario)
+
+        reg.clave.codDep:= depUsuario
+        reg.clave.idProy:= 0
+        LEER(arch, reg)
+
+        SI EXISTE ENTONCES
+            MIENTRAS NFDA(arch) Y (reg.clave.codDep = depUsuario) HACER
+                SEGUN (reg.est) HACER
+                    = "E":
+                        reg.pres:= reg.pres + (1 * porUsuario / 100)
+                        REGRABAR(arch, reg)
+                        cantAct:= cantAct + 1
+                        totPres:= totPres + reg.pres
+                    = "F":
+                        SI (reg.cantI = 0) ENTONCES
+                            ELIMINAR(arch, reg)
+                            cantE:= cantE + 1
+                        FS
+                FS
+                LEER(arch, reg)
+            FM
+        SINO
+            ESC("Error: El departamento especificado no existe o no tiene proyectos registrados")
+        FS
+        emitirTit()
+        CERRAR(arch)
+FIN ACCION

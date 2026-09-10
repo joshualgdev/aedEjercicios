@@ -1,0 +1,131 @@
+ACCION ejer_indexado_3 ES
+    AMBIENTE
+        HERRAMIENTAS = REGISTRO
+            codHer: entero
+            nomHer: AN(30)
+            estHer: AN(1)   // 'D' (Disponible), 'P' (Prestada), 'R' (En Reparación)
+            cantUsos: entero
+        FR
+
+        // Sintaxis formal corregida: INDEXADO POR codHer
+        arch: ARCHIVO DE HERRAMIENTAS INDEXADO POR codHer
+        reg: HERRAMIENTAS
+
+        // Declaración completa de variables de control e interacción
+        op, codOp, tipoMov: caracter
+        codUs, bajas, contPres: entero
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/S(arch)
+            bajas:= 0
+            contPres:= 0
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+        FP
+
+        PROCEDIMIENTO procesarAlta() ES
+            ESC("--- ALTA DE NUEVA HERRAMIENTA ---")
+            ESC("Ingrese nombre/descripción de la herramienta:")
+            LEER(reg.nomHer)
+
+            reg.estHer:= "D"
+            reg.cantUsos:= 0 // Inicialización limpia requerida
+
+            GRABAR(arch, reg) // Inserta nuevo registro en el maestro
+            ESC(">> Herramienta registrada exitosamente.")
+        FP
+
+        PROCEDIMIENTO procesarModificacion() ES
+            ESC("--- PRÉSTAMO / DEVOLUCIÓN DE HERRAMIENTA ---")
+            ESC("Ingrese tipo de movimiento (P: Préstamo, D: Devolución):")
+            LEER(tipoMov)
+
+            SI (tipoMov = "P") O (tipoMov = "p") ENTONCES
+                SI (reg.estHer = "D") ENTONCES
+                    reg.estHer:= "P"
+                    reg.cantUsos:= reg.cantUsos + 1
+                    contPres:= contPres + 1 // BUG CORREGIDO: Incremento solo si se presta
+                    ESC(">> Préstamo registrado con éxito.")
+                SINO
+                    ESC("Error: Herramienta no disponible para préstamo.")
+                FS
+            SINO
+                SI (tipoMov = "D") O (tipoMov = "d") ENTONCES
+                    SI (reg.estHer = "P") ENTONCES
+                        reg.estHer:= "D"
+                        ESC(">> Devolución registrada con éxito.")
+                    SINO
+                        ESC("Error: La herramienta no figuraba prestada.")
+                    FS
+                SINO
+                    ESC("Error: Tipo de movimiento no válido.")
+                FS
+            FS
+
+            REGRABAR(arch, reg) // Sobrescribe in-situ el registro actualizado
+        FP
+
+        PROCEDIMIENTO procesarBaja() ES
+            ESC("--- SOLICITUD DE BAJA DE HERRAMIENTA ---")
+            SI (reg.estHer = "D") ENTONCES
+                ELIMINAR(arch, reg) // Elimina registro del disco
+                bajas:= bajas + 1
+                ESC(">> Herramienta eliminada físicamente del pañol.")
+            SINO
+                ESC("Error: No se puede eliminar una herramienta en uso o en reparación.")
+            FS
+        FP
+
+        PROCEDIMIENTO emitirInforme() ES
+            ESC("========================================")
+            ESC("Cantidad total de préstamos realizados: ", contPres)
+            ESC("Cantidad total de bajas físicas efectivas: ", bajas)
+            ESC("========================================")
+        FP
+
+    PROCESO
+        inic()
+
+        ESC("¿Desea realizar una operación? S (sí) / N (no):")
+        LEER(op)
+
+        MIENTRAS (op = "S") O (op = "s") HACER
+            ESC("Ingrese código de herramienta a procesar:")
+            LEER(codUs)
+
+            // Carga de clave y consulta puntual al área de índices
+            reg.codHer:= codUs
+            LEER(arch, reg)
+
+            ESC("¿Qué operación desea realizar? (A: Alta, M: Modificación, B: Baja):")
+            LEER(codOp)
+
+            SI EXISTE ENTONCES
+                SEGUN (codOp) HACER
+                    "A", 'a':
+                        ESC("Error: La herramienta ya está registrada.")
+                    "M", 'm':
+                        procesarModificacion()
+                    "B", 'b':
+                        procesarBaja()
+                FS
+            SINO
+                SEGUN (codOp) HACER
+                    "A", 'a':
+                        procesarAlta()
+                    "M", 'm':
+                        ESC("Error: Herramienta inexistente para modificación.")
+                    "B", 'b':
+                        ESC("Error: Herramienta inexistente para baja.")
+                FS
+            FS
+
+            ESC("¿Desea realizar otra operación? S (sí) / N (no):")
+            LEER(op)
+        FM
+
+        emitirInforme()
+        fina()
+FIN ACCION

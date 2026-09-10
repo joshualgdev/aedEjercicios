@@ -1,0 +1,45 @@
+ACCION ejer ES
+    AMBIENTE
+        productos: ARREGLO [1..5] DE AN(30)
+        precios: ARREGLO [1..5] DE real
+
+        costoAcum, precioProm, max: real
+        prodBuscado: AN(30)
+        
+    PROCESO
+        costoAcum:= 0.0
+        precioProm:= 0.0
+        max:= -1.0
+        
+        PARA(i:= 1 HASTA 5) HACER
+            ESC("Ingrese productos")
+            LEER(productos[i])
+            ESC("Ingrese precios")
+            LEER(precios[i])
+            costoAcum:= costoAcum + precios[i]
+        FP
+
+        precioProm:= costoAcum / 5
+
+        PARA (i:= 1 HASTA 5) HACER
+            SI (precios[i] > max) ENTONCES
+                max:= precios[i]
+                nomProd:= productos[i]
+            FS
+        FP
+
+        ESC("Ingrese el producto que está buscando")
+        LEER(prodBuscado)
+        i:= 1
+
+        MIENTRAS (i < 5) Y (productos[i] <> prodBuscado) HACEER
+            i:= i + 1
+        FM
+
+        SI (productos[i] = prodBuscado) ENTONCES
+            ESC("El producto es ", productos[i])
+        SINO
+            ESC("No existe")
+        FS
+        
+FIN ACCION

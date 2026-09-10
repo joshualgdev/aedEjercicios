@@ -1,0 +1,48 @@
+ACCION ejer ES
+    AMBIENTE
+        empleados: ARREGLO [1..5] DE AN(30)
+        sueldos: ARREGLO [1..5] DE real
+
+        sueldoProm, gastoTotal, max: real
+        i: entero
+        emple, empleUsu: AN(30)
+        
+    PROCESO 
+        i:= 0
+        max:= -1
+        sueldoProm:= 0.0
+        gastoTotal:= 0.0
+        PARA (i:= 1 HASTA 5)
+            ESC("Ingrese nombre empleado")
+            LEER(empleados[i])
+            ESC("Ingrese los sueldos")
+            LEER(sueldos[i])
+            gastoTotal:= gastoTotal + sueldos[i]
+        FP
+
+        sueldoProm:= gastoTotal / 5
+
+        PARA (i:= 1 HASTA 5) HACER
+            SI (sueldos[i] > max) ENTONCES
+                max:= sueldos[i]
+                emple:= nombres[i]
+            FS
+        FP
+
+        ESC("El gasto total es: ", gastoTotal, " el promedio de sueldo es ", sueldoProm, " el empleado ", emple, " es el que tiene el sueldo más alto ", max)
+
+        ESC("Ingrese empleado a buscar")
+        LEER(empleUsu)
+        
+        i:= 1
+
+        MIENTRAS (i < 5) Y (nombres[i] <> empleUsu) HACER
+            i:= i + 1
+        FM
+
+        SI (nombres[i] = empleUsu) ENTONCES
+            ESC("Existe el empleado ", nombres[i], " su sueldo es ", sueldos[i])
+        SINO
+            ESC("No existe")
+        FS
+FIN ACCION

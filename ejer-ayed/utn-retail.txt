@@ -1,0 +1,49 @@
+ACCION ejer ES
+    AMBIENTE
+        claveEmp = REGISTRO
+            codSuc: entero
+            leg: entero
+        FS
+        
+        EMPLEADOS = REGISTRO
+            clave: claveEmp
+            nom: AN(30)
+            sueldo: real
+            est: AN(1)
+        FR
+
+        arch: ARCHIVO DE EMPLEADOS INDEXADO POR clave
+        reg: EMPLEADOS
+
+        cantAct: entero
+        totalMS: real
+
+    PROCESO
+        ABRIR E/S(arch)
+        cantAct:= 0
+        totalMS:= 0.0
+        ESC("Ingrese el código de sucursal")
+        LEER(codUsuario)
+        ESC("Ingrese porcentaje a aumentar")
+        LEER(aumento)
+        
+        reg.clave.codSuc:= codUsuario
+        reg.clave.leg:= 0
+        LEER(arch, reg)
+
+        SI EXISTE ENTONCES  
+            MIENTRAS NFDA(arch) Y (reg.clave.codSuc = codUsuario) HACER
+                SI (reg.est = "A") ENTONCES
+                    reg.sueldo:= reg.sueldo * (1 + aumento / 100)
+                    cantAct:= cantAct + 1
+                    totalMS:= totalMS + reg.sueldo
+                    REGRABAR(arch, reg)
+                FS
+                LEER(arch, reg)
+            FM
+        SINO
+            ESC("Error: Sucursal inexistente o sin empleados")
+        FS
+        ESC("Total act ", cantAct, " nueva masa ", totalMS)
+        CERRAR(arch)
+FIN ACCION
