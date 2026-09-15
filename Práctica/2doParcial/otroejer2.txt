@@ -1,0 +1,32 @@
+ACCION ejer ES
+    AMBIENTE
+        dias: ARREGLO [1..7] DE real
+        i: entero
+        sumaLlu, prom: real
+        cantSup: entero
+
+        PROCEDIMIENTO inic() ES
+            sumaLlu:= 0.0
+            prom:= 0.0
+            cantSup:= 0
+        FP
+
+    PROCESO
+        inic()
+        PARA (i:= 1 HASTA 7) HACER
+            ESC("Rellene los días")
+            LEER(dias[i])
+            sumaLlu:= sumaLlu + dias[i]
+        FP
+
+        prom:= sumaLlu / 7
+
+        PARA (i:= 1 HASTA 7) HACER
+            SI (dias[i] > prom) HACER
+                cantSup:= cantSup + 1
+                ESC("el dia fue: ", dias[i])
+            FS
+        FP
+
+        ESC("la cantidad de dias que superaron el promedio ", cantSup)
+FIN ACCION

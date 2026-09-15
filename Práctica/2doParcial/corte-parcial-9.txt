@@ -1,0 +1,105 @@
+1er Parcial - Julio 2023
+
+VENTAS ordenado por provincia, ciudad, plataforma y fecha.
+
+| provincia | ciudad | plataforma | fecha | entradas |
+
+Escribir un algoritmo en pseudocódigo que cumpla con las siguientes consignas:
+a) Generar un archivo de salida con todas las entradas vendidas en el mes de junio con el siguiente formato:
+
+| provincia | entradas |
+
+b) Informar las ciudades (y la provincia a la que pertenecen) que tengan una venta superior a las 7500 entradas.
+
+ACCION ejer ES
+    AMBIENTE
+        ventas = REGISTRO
+            prov: AN(30)
+            ciu: AN(30)
+            plat: AN(30)
+            fecha = REGISTRO
+                aa: 1900..2026
+                mm: 1..12
+                dd: 1..31
+            FR
+            entradas: N(4)
+        FR
+
+        ventaSal = REGISTRO
+            prov: AN(30)
+            entradas: N(4)
+        FR
+
+        arch: ARCHIVO DE ventas ORDENADO POR prov, ciu, plat, fecha
+        reg: ventas
+
+        archS: ARCHIVO DE ventaSal
+        regS: ventaSal
+
+        resProv: AN(30)
+        resCiu: AN(30)
+
+        totCiu, totProv: entero
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            ABRIR /S(archS)
+            LEER(arch, reg)
+            resProv:= reg.prov
+            resCiu:= reg.ciu
+            totCiu:= 0
+            totProv:= 0
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+            CERRAR(archS)
+        FP
+
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resProv <> reg.prov) ENTONCES
+                corteProv()
+            SINO
+                SI (resCiu <> reg.ciu) ENTONCES
+                    corteCiu()
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO tratarReg() ES
+            SI (reg.fecha.mm = 6) ENTONCES
+                totProv:= totProv + reg.entradas
+            FS
+            totCiu:= totCiu + reg.entradas
+        FP
+
+        PROCEDIMIENTO corteCiu() ES
+            SI (totCiu > 7500) ENTONCES
+                ESC("Para la ciudad ", resCiu, " de la provincia: ", resProv, " se vendieron más de 7500 entradas: ", totCiu)
+            FS
+
+            totCiu:= 0
+            resCiu:= reg.ciu
+        FP
+
+        PROCEDIMIENTO corteProv() ES
+            corteCiu()
+
+            regS.prov:= resProv
+            regS.entradas:= totProv
+            GRABAR(archS, regS)
+
+            totProv:= 0
+            resProv:= reg.prov
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS NO FDA (arch) HACER
+            tratarCorte()
+            tratarReg()
+            LEER(arch, reg)
+        FM
+        corteProv()
+        fina()
+FIN ACCION

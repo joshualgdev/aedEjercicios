@@ -1,0 +1,115 @@
+Problema N° 2
+La Universidad Tecnológica Nacional dispone de un archivo secuencial denominado JUBILAR con los datos de los docentes en condiciones de jubilarse, ordenado por regional, carrera y nro. de legajo, con el siguiente formato de registro:
+
+| REGIONAL | CARRERA | LEGAJO N(5) | SEXO | NOMBRE |
+
+a) Informar la cantidad de docentes en condiciones de jubilarse, por regional, carrera y total general (los totales de carrera debe mostrarlos discriminados por sexo, los demás total de ambos sexos).
+b) Informar la regional con mayor cantidad de docentes (total ambos sexos) en condiciones de
+jubilarse.
+c) Generar un archivo de salida con la siguiente estructura:
+| Regional | Cantidad Jubilados |
+
+ACCION ejer ES
+    AMBIENTE
+        jubilar = REGISTRO
+            regi: AN(30)
+            car: AN(15)
+            leg: N(5)
+            sexo: ("F", "M")
+            nombre: AN(30)
+        FR
+
+        jubSal = REGISTRO
+            regio: AN(30)
+            cantJub: entero
+        FR
+
+        arch: ARCHIVO DE jubilar ORDENADO POR regi, car, leg
+        reg: jubilar
+
+        archS: ARCHIVO DE jubSal
+        regS: jubSal
+
+        resReg, regional: AN(30)
+        resCar: AN(15)
+        tot, totReg, totM, totF, max: entero
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            ABRIR /S(archS)
+            LEER(arch, reg)
+            
+            resReg:= reg.regi
+            resCar:= reg.car
+
+            tot:= 0
+            totReg:= 0
+            totM:= 0
+            totF:= 0
+            max:= -1
+        FP
+
+        PROCEDIMIENTO fina() ES
+            ESC("La cantidad de docentes que se pueden jubilar es ", tot)
+            ESC("La regional con mayor cantidad de docentes a jubilar es ", regional, " con ", max)
+            CERRAR(arch)
+            CERRAR(archS)
+        FP
+
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resReg <> reg.regi) ENTONCES
+                corteReg()
+            SINO
+                SI (resCar <> reg.car) ENTONCES
+                    corteCar()
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO tratarRegistro() ES
+            SI (reg.sexo = "M") ENTONCES
+                totM:= totM + 1
+            SINO
+                SI (reg.sexo = "F") ENTONCES
+                    totF:= totF + 1
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO corteCar() ES
+            ESC("Para la carrera ", resCar, " los docentes que se pueden jubilar de sexo M es: ", totM, " y de sexo F: ", totF)
+            
+            totReg:= totReg + totF + totM
+            totM:= 0
+            totF:= 0
+            resCar:= reg.car
+        FP
+
+        PROCEDIMIENTO corteReg() ES
+            corteCar()
+            ESC("Para la regional ", resReg, " la cantidad de docentes que se pueden jubilar es ", totReg)
+
+            regS.regio:= resReg
+            regS.cantJub:= totReg
+            GRABAR(archS, regS)
+
+            SI (totReg > max) ENTONCES
+                max:= totReg
+                regional:= resReg
+            FS
+            
+            tot:= tot + totReg
+            totReg:= 0
+            resReg:= reg.regi
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS NFDA(arch) HACER
+            tratarCorte()
+            tratarRegistro()
+            LEER(arch, reg)
+        FM
+        corteReg()
+        fina()
+FIN ACCION

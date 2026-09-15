@@ -1,0 +1,99 @@
+Ejercicio 2.2.17
+La Secretaria Academica de la Facultad lanza un proyecto para incentivar a aquellos alumnos que realizaron el Cursillo de Ingreso a la Universidad y no lograron aprobarlo en los turnos de Agosto y Febrero, de manera de brindarles apoyo Academico con el fin de que, en el Cursillo del año siguiente puedan aprobar los examenes necesarios e ingresar a la Universidad.
+Para esto, dicha Secretarianecesita crear un archivo donde se encuentren todos los aspirantes que realizaron el Cursillo de Ingreso en ambos turnos, y no lograron aprobarlo.
+
+Los datos correspondientes a cada uno de los turnos del Cursillo dictado están almacenados en dos archivos (uno para cada turno), los cuales presentan el siguiente formato:
+
+ASPIRANTES Ordenado por DNI
+DNI - ApeyNom - Carrera - F_Nac - Email - ColegioSec - FechaInscrip
+
+UD debe realizar un algoritmo que permita mezclar los archivos Aspirantes (de Agosto y Febrero) y generar un archivo SEGUIMIENTO con el siguiente formato:
+
+SEGUIMIENTO Ordenado por DNI
+DNI - ApeyNom - Email - ColegioSec
+
+Al finalizar el proceso informar la cantidad de aspirantes que se grabaron en el archivo SEGUIMIENTO.
+
+ACCION ejer ES
+    AMBIENTE
+        FECHA = REGISTRO
+            aa: 1900..2026
+            mm: 1..12
+            dd: 1..31
+        FR
+        
+        ASPIRANTES = REGISTRO
+            dni: N(8)
+            apeNom: AN(30)
+            carrera: AN(30)
+            fechaNac: FECHA
+            email: AN(30)
+            colegioSec: AN(30)
+            fechaIns: FECHA
+        FR
+
+        SEGUIMIENTO = REGISTRO
+            dni: N(8)
+            apeNom: AN(30)
+            email: AN(30)
+            colegioSec: AN(30)
+        FR
+
+        archA, archB: ARCHIVO DE ASPIRANTES ORDENADO POR dni
+        regA, regB: ASPIRANTES
+
+        archS: ARCHIVO DE SEGUIMIENTO ORDENADO POR dni
+        regS: SEGUIMIENTO
+
+        PROCEDIMIENTO leerA() ES
+            LEER(archA, regA)
+            SI FDA(archA) ENTONCES
+                regA.dni:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO leerB() ES
+            LEER(archB, regB)
+            SI FDA(archB) ENTONCES
+                regB.dni:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(archA)
+            ABRIR E/(archB)
+            ABRIR /S(archS)
+            leerA()
+            leerB()
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(archA)
+            CERRAR(archB)
+            CERRAR(archS)
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS (regA.dni <> HV) Y (regB.dni <> HV) HACER
+            SI (regA.dni < regB.dni) ENTONCES
+                leerA()
+            SINO
+                SI (regA.dni > regB.dni) ENTONCES
+                    leerB()
+                SINO
+                    regS.dni:= regA.dni
+                    regS.apeNom:= regA.apeNom
+                    regS.email:= regA.email
+                    regS.colegioSec:= regA.colegioSec
+                    
+                    GRABAR(archS, regS)
+                    leerA()
+                    leerB()
+                    cont:= cont + 1
+                FS
+            FS
+        FM
+        ESC("La cantidad de aspirantes que se grabaron fue ", cont)
+        fina()
+FIN ACCION

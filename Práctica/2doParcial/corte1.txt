@@ -1,0 +1,74 @@
+ACCION ejer ES
+    AMBIENTE
+        FECHA = REGISTRO
+            aa: 1900..2026
+            mm: 1..12
+            dd: 1..31
+        FR
+
+        VENTAS = REGISTRO
+            nroCaja: entero
+            formaP: AN(2)
+            nroTicket: entero
+            fechaVenta: FECHA
+            cantArt: entero
+            importeV: real
+        FR
+
+        arch: ARCHIVO DE VENTAS ORDENADO POR nroCaja, formaP, nroTicket
+        reg: VENTAS
+
+        FICHASAL = REGISTRO
+            nroCaja: entero
+            totalE: real
+            totalT: real
+        FR
+
+        archS: ARCHIVO DE FICHASAL
+        regS: FICHASAL
+
+        resNroCaja: entero
+        resFormaP: AN(2)
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            ABRIR /S(archS)
+            LEER(arch, reg)
+            resNroCaja:= reg.nroCaja
+            resFormaP:= reg.formaP
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+            CERRAR(archS)
+        FP
+
+        PROCEDIMIENTO corteFormaPago() ES
+
+        FP
+
+        PROCEDIMIENTO corteCaja() ES
+            corteFormaPago()
+        FP
+
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resNroCaja <> reg.nroCaja) ENTONCES
+                corteCaja()
+            SINO
+                SI (resFormaP <> reg.formaP) ENTONCES
+                    corteFormaPago()
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO tratarRegistro() ES
+        FP
+
+        PROCEDIMIENTO emitirTot() ES
+        FP
+
+    PROCESO
+        inic()
+        MIENTRAS ()
+        fina()
+FIN ACCION

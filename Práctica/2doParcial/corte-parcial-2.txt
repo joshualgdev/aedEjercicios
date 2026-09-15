@@ -1,0 +1,127 @@
+1er PARCIAL – Julio 2024 - TEMA A
+
+La cadena de hoteles del ejercicio anterior cuenta con un sistema de gestión de reservas y ahora le solicita a Ud. un informe de ocupación y facturación para el mes de JUNIO. Para cada reserva se registra:
+RESERVAS, Ordenado por Número de Hotel, Tipo de Habitación, Número de Reserva.
+
+| Nro. de Hotel | Tipo de Habitación (IND, DOB, SUITE) | Nro de Reserva | Fecha de ingreso | Cantidad de noches | Importe de la reserva |
+Tipo de Habitación: (IND: Individual, DOB: Doble, SUITE: Suite)
+
+Se pide escribir un algoritmo que permita:
+1) Imprimir un informe que muestre el total de noches reservadas por hotel y por tipo de habitación.
+2) Crear un fichero de salida que contenga Número de Hotel, total de noches reservadas en habitaciones dobles y suites.
+| Nro de Hotel | Total hab. dobles | Total hab. suites |
+
+3) informar cuales son los hoteles que tuvieron mayor cantidad de noches reservadas en habitaciones dobles que en suites.
+
+
+ACCION ejer ES
+    AMBIENTE
+        FECHA = REGISTRO
+            aa: 1900..2026
+            mm: 1..12
+            dd: 1..31
+        FR
+
+        reservas = REGISTRO
+            nroH: N(2)
+            tipoH: AN(5)
+            nroR: N(2)
+            fechaI: FECHA
+            cantN: N(2)
+            importeR: real
+        FR
+
+        reservaSal = REGISTRO
+            nroH: N(2)
+            totalHD: entero
+            totalHS: entero
+        FR
+
+        arch: ARCHIVO DE reservas ORDENADO POR nroH, tipoH, nroR
+        reg: reservas
+
+        archS: ARCHIVO DE reservaSal
+        regS: reservaSal
+
+        resNroH: N(2)
+        resTipoH: AN(5)
+
+        totNroH, totTipoH, dob, suite: entero
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            ABRIR /S(archS)
+            LEER(arch, reg)
+            resNroH:= reg.nroH
+            resTipoH:= reg.tipoH
+
+            totNroH:= 0
+            totTipoH:= 0
+            dob:= 0
+            suite:= 0
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+            CERRAR(archS)
+        FP
+
+        PROCEDIMIENTO corteTH() ES
+            ESC("El total de noches reservadas en el tipo de habitación " resTipoH, " es de: ", totTipoH)
+
+            totNroH := totNroH + totTipoH
+            totTipoH:= 0
+            resTipoH:= reg.tipoH
+        FP
+
+        PROCEDIMIENTO corteNH() ES
+            corteTH()
+            ESC("El total de noches reservadas en el nro de hotel ", resNroH, " es de: ", totNroH)
+
+            SI (dob > suite) ENTONCES
+                ESC("El hotel ", resNroH " tuvo más reservas dobles que suite")
+            FS
+
+            regS.nroH:= resNroH
+            regS.totalHD:= dob
+            regS.totalHS:= suite
+            GRABAR(archS, regS)
+
+            dob:= 0
+            suite:= 0
+            totNroH:= 0
+            resNroH:= reg.nroH
+        FP
+
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resNroH <> reg.nroH) ENTONCES
+                corteNH()
+            SINO
+                SI (resTipoH <> reg.tipoH) ENTONCES
+                    corteTH()
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO tratarRegistro() ES
+            totTipoH:= totTipoH + reg.cantN
+            SI (reg.tipoH = "DOB") ENTONCES
+                dob:= dob + reg.cantN
+            SINO
+                SI (reg.tipoH = "SUITE") ENTONCES
+                    suite:= suite + reg.cantN
+                FS
+            FS
+        FP
+
+
+    PROCESO
+        inic()
+        MIENTRAS NFDA(arch) HACER
+            tratarCorte()
+            tratarRegistro()
+            LEER(arch, reg)
+        FM
+        corteNH()
+        fina()
+FIN ACCION

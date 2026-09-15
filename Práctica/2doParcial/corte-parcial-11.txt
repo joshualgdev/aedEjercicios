@@ -1,0 +1,111 @@
+Stock, ordenado por Código sucursal, Rubro y Código Artículo
+
+Cod Suc N(2) Rubro AN(20) Cod Articulo N(5) FechaUltRep Stock de seguridad Stock actual
+
+FechaUltRep: fecha última reposición
+El stock de seguridad es el nivel mínimo de existencias que se debe mantener en almacén.
+Se le pide escribir un algoritmo en pseudocódigo que permita:
+1. Generar un informe de totales por sucursal, por rubro y total general de cantidad de artículos cuya fecha de última reposición sea
+anterior a una fecha ingresada por el usuario.
+2. Generar un archivo de salida que contenga todos los artículos del rubro “Bazar”, cuya fecha de última reposición sea anterior a la
+fecha ingresada por el usuario. Debe contener sucursal y código de articulo.
+
+ACCION ejer ES
+    AMBIENTE
+        FECHA = REGISTRO
+            aa: 1900..2026
+            mm: 1..12
+            dd: 1..31
+        FR
+
+        stock = REGISTRO
+            codSuc: N(2)
+            rub: AN(20)
+            codArt: N(5)
+            fechaUR: FECHA
+        FR
+
+        stockS = REGISTRO
+            codSuc: N(2)
+            codArt: N(5)
+        FR
+
+        arch: ARCHIVO DE stock ORDENADO POR codSuc, rub, codArt
+        reg: stock
+
+        archS: ARCHIVO DE stockS
+        regS: stockS
+
+        fechaU: FECHA
+        resCodSuc: N(2)
+        resRub: AN(20)
+        totRub, totCodSuc, tot: entero
+
+        PROCEDIMIENTO corteRub() ES
+            ESC("Para el rubro ", resRub, " el total de articulos es ", totRub)
+
+            totCodSuc:= totCodSuc + totRub
+            totRub:= 0
+            resRub:= reg.rub
+        FP
+
+        PROCEDIMIENTO corteCodSuc() ES
+            corteRub()
+            ESC("Para el código de sucursal ", resCodSuc, " el total de articulos es ", totCodSuc)
+
+            tot:= tot + totCodSuc
+            totCodSuc:= 0
+            resCodSuc:= reg.codSuc
+        FP
+
+        PROCEDIMIENTO tratarReg() ES
+            SI (reg.fechaUR < fechaU) ENTONCES
+                totRub:= totRub + 1
+
+                SI (reg.rub = "Bazar") ENTONCES
+                    regS.codSuc:= reg.codSuc
+                    regS.codArt:= reg.codArt
+                    GRABAR(archS, regS)
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resCodSuc <> reg.codSuc) ENTONCES
+                corteCodSuc()
+            SINO
+                SI (resRub <> reg.rub) ENTONCES
+                    corteRub()
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            ABRIR /S(archS)
+            LEER(arch, reg)
+            resCodSuc:= reg.codSuc
+            resRub:= reg.rub
+            totRub:= 0
+            totCodSuc:= 0
+            tot:= 0
+        FP
+
+        PROCEDIMIENTO fina() ES
+            ESC("El total de productos es ", tot)
+            CERRAR(arch)
+            CERRAR(archS)
+        FP
+
+    PROCESO
+        inic()
+        ESC("Ingrese una fecha")
+        LEER(fechaU.aa, fechaU.mm, fechaU.dd)
+        MIENTRAS NO FDA(arch) HACER
+            tratarCorte()
+            tratarReg()
+            LEER(arch, reg)
+        FM
+        corteCodSuc()
+        fina()
+FIN ACCION

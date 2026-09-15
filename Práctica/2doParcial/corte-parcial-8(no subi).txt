@@ -1,0 +1,105 @@
+Basados en el escenario del ejercicio 1, se tiene un archivo secuencial que contiene las informaciones de ventas finales de entradas para el festival, realizadas desde el 1 de mayo del 2023 hasta el 1 de julio de 2023.
+VENTAS ordenado por provincia, ciudad, plataforma y fecha
+| provincia | ciudad | plataforma | fecha | entradas |
+Escribir un algoritmo en pseudocódigo que cumpla con las siguientes consignas:
+a) Generar un archivo de salida que contenga datos de las ciudades en las cuales la cantidad total de entradas vendidas supera las 1000, con el siguiente formato:
+provincia | ciudad | entradas |
+b) Informar el total de ventas del 1 de junio al 1 julio, discriminado por plataforma y ciudad.
+
+ACCION ejer ES
+    AMBIENTE
+        FECHA = REGISTRO
+            aa: 1900..2026
+            mm: 1..12
+            dd: 1..31
+        FR
+    
+        ventas = REGISTRO
+            prov: AN(30)
+            ciu: AN(30)
+            plat: AN(30)
+            fecha: FECHA
+            entradas: N(4)
+        FR
+
+        ventaSal = REGISTRO
+            prov: AN(30)
+            ciu: AN(30)
+            entradas: N(4)
+        FR
+
+        arch: ARCHIVO DE ventas ORDENADO POR prov, ciu, plat, fecha
+        reg: ventas
+
+        archS: ARCHIVO DE ventaSal
+        regS: ventaSal
+
+        totCiu, totProv, totEntradas: entero
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            ABRIR /S(archS)
+            LEER(arch, reg)
+            resCiu:= reg.ciu
+            resProv:= reg.prov
+            totCiu:= 0
+            totProv:= 0
+            totEntradas:= 0
+        FP
+
+        PROCEDIMIENTO corteCiu() ES
+            ESC("El total de ventas en la ciudad ", resCiu " es ", totCiu)
+
+            totProv:= totProv + totCiu
+            totCiu:= 0
+            resProv:= reg.prov
+        FP
+
+        PROCEDIMIENTO corteProv() ES
+            corteCiu()
+            ESC("El total de ventas en la provincia ", resProv, " es ", totProv)
+
+            SI (totEntradas > 1000) ENTONCES
+                regS.prov:= resProv
+                regS.ciu:= resCiu
+                regS.entradas:= totEntradas
+                GRABAR(archS, regS)
+            FS
+
+            totEntradas:= 0
+            totProv:= 0
+            resProv:= reg.prov
+        FP
+        
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resProv <> reg.prov) ENTONCES
+                corteProv()
+            SINO
+                SI (resCiu <> reg.ciu) ENTONCES
+                    corteCiu()
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO tratarReg() ES
+            SI (reg.fecha.dd = 1) Y ((reg.fecha.mm = 6) O (reg.fecha.mm = 7)) ENTONCES
+                totCiu:= totCiu + reg.entradas
+            FS
+            totEntradas:= totEntradas + reg.entradas
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+            CERRAR(archS)
+        FP
+
+    PROCESO
+        inic()
+        MIENTRAS NO FDA(arch) HACER
+            tratarCorte()
+            tratarReg()
+            LEER(arch, reg)
+        FM
+        corteProv()
+        fina()
+FIN ACCION

@@ -1,0 +1,129 @@
+Además de la información previamente mencionada, se dispone de un archivo que registra las
+adopciones organizadas por departamento, localidad, barrio y adoptante. Este archivo también
+proporciona datos adicionales como el tipo de animal (canino o felino), y la cantidad de
+mascotas que ya tiene el adoptante.
+
+Departamento localidad barrio dni adoptante id_mascota Tipo (C,F) cant anteriores
+
+Se solicita:
+1. Informar la cantidad de adopciones por localidad y barrio ; discriminando por perros y
+gatos.
+2. Informar el porcentaje de gatos adoptados en la provincia.
+3. Generar un nuevo archivo con el siguiente formato, considerando solo las adopciones
+por familias que ya tenían más de 3 mascotas.
+Departamento | Localidad | Cantidad de adopciones
+
+ACCION ejer ES
+    AMBIENTE
+        adop = REGISTRO
+            dep: AN(30)
+            loc: AN(30)
+            barrio: AN(30)
+            dniAdop: N(8)
+            idMasc: N(6)
+            tipo: ('C', 'F')
+            cantAnt: entero
+        FR
+
+        adopS = REGISTRO
+            dep: AN(30)
+            loc: AN(30)
+            cantAdop: entero
+        FR
+
+        arch: ARCHIVO DE adop ORDENADO POR dep, loc, barrio, dniAdop
+        reg: adop
+
+        archS: ARCHIVO DE adopS
+        regS: adopS
+
+        resDep, resLoc, resBar: AN(30)
+
+        pBar, gBar, pLoc, gLoc, cantAdop3: entero
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            ABRIR /S(archS)
+            LEER(arch, reg)
+            resDep:= reg.dep
+            resLoc:= reg.loc
+            resBar:= reg.barrio
+            pBar:= 0
+            pLoc:= 0
+            gBar:= 0
+            gLoc:= 0
+        FP
+
+        PROCEDIMIENTO corteBar() ES
+            ESC("Para el barrio ", resBar, " la cantidad de perros es ", pBar, " y la de gatos ", gBar)
+
+            pLoc:= pLoc + pBar
+            gLoc:= gLoc + gBar
+
+            pBar:= 0
+            gBar:= 0
+            resBar:= reg.bar
+        FP
+
+        PROCEDIMIENTO corteLoc() ES
+            corteBar()
+            ESC("Para la localidad ", resLoc, " la cantidad de perros es ", pLoc, " y la de gatos ", gLoc)
+
+            regS.dep:= resDep
+            regS.loc:= resLoc
+            regS.cantAdop:= cantAdop3
+            GRABAR(archS, regS)
+
+            cantAdop3:= 0
+            pLoc:= 0
+            gLoc:= 0
+            resLoc:= reg.loc
+        FP
+
+        PROCEDIMIENTO corteDep() ES
+            corteLoc()
+            resDep:= reg.dep
+        FP
+
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resDep <> reg.dep) ENTONCES
+                corteDep()
+            SINO
+                SI (resLoc <> reg.loc) ENTONCES
+                    corteLoc()
+                SINO
+                    SI (resBar <> reg.bar) ENTONCES
+                        corteBar()
+                    FS
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO tratarReg() ES
+            SI (reg.tipo = "F") ENTONCES
+                pBar:= pBar + 1
+            SINO
+                SI (reg.tipo = "C") ENTONCES
+                    gBar:= gBar + 1
+                FS
+            FS
+            SI (reg.cantAnt > 3) ENTONCES
+                cantAdop3:= cantAdop3 + 1
+            FS
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+            CERRAR(archS)
+        FP
+
+    PROCESO
+        inic()
+        MIENTRAS NO FDA(arch) HACER
+            tratarCorte()
+            tratarReg()
+            LEER(arch, reg)
+        FM
+        corteDep()
+        fina()
+FIN ACCION

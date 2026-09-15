@@ -1,0 +1,122 @@
+Para continuar con su análisis de fin de año, Spotify cuenta con un archivo con todas sus canciones según el siguiente formato:
+CANCIONES, ordenado por Genero, Artista, Album, Nombre,Codigo
+
+| Genero AN(20) | Artista AN(70) | Album AN(70) | Nombre AN(12) | Codigo N(15) | Fecha publicacion | Cantidad_Reproducciones N(20) |
+
+Se pide emitir un archivo que contenga la cantidad de canciones publicadas por cada artista.
+
+CANCIONES SALIDA ordenado por ARTISTA
+| Artista AN(70) | Cant canciones N(3) |
+Además se pide:
+
+1. Emitir la cantidad total de reproducciones por cada género y el total general de cantidad de reproducciones.
+2. Identificar el artista con la mayor cantidad de reproducciones.
+
+ACCION ejer ES
+    AMBIENTE
+        FECHA = REGISTRO
+            aa: 1900..2026
+            mm: 1..12
+            dd: 1..31
+        FR
+        
+        canc = REGISTRO
+            gen: AN(20)
+            art: AN(70)
+            alb: AN(70)
+            nom: AN(12)
+            cod: N(15)
+            fechaP: FECHA
+            cantR: N(20)
+        FR
+
+        cancS = REGISTRO
+            art: AN(70)
+            cancC: N(3)
+        FR
+
+        arch: ARCHIVO DE canc ORDENADO POR gen, art, alb, nom, cod
+        reg: canc
+
+        archS: ARCHIVO DE cancS ORDENADO POR art
+        regS: cancS
+
+        resGen: AN(20)
+        resArt, art: AN(70)
+        totGen, totArt, tot, max, cantC: entero
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            ABRIR /S(archS)
+            LEER(arch, reg)
+            resGen:= reg.gen
+            resArt:= reg.art
+            totGen:= 0
+            totArt:= 0
+            tot:= 0
+            cantC:= 0
+            max:= -1
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+            CERRAR(archS)
+        FP
+
+        PROCEDIMIENTO corteArt() ES
+            SI (totArt > max) ENTONCES
+                max:= totArt
+                art:= resArt
+            FS
+            
+            regS.art:= resArt
+            regS.cancC:= cantC
+            GRABAR(archS, regS)
+
+            totGen:= totGen + totArt
+            totArt:= 0
+            cantC:= 0
+            resArt:= reg.art
+        FP
+
+        PROCEDIMIENTO corteGen() ES
+            corteArt()
+            
+            ESC("Para el género ", resGen, " la cantidad total de reproducciones fue ", totGen)
+            
+            tot:= tot + totGen
+            totGen:= 0
+            resGen:= reg.gen
+        FP
+
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resGen <> reg.gen) ENTONCES
+                corteGen()
+            SINO
+                SI (resArt <> reg.art) ENTONCES
+                    corteArt()
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO tratarRegistro() ES
+            cantC:= cantC + 1
+            totArt:= totArt + reg.cantR
+        FP
+
+        PROCEDIMIENTO emitirTot() ES
+            ESC("El total general de reproducciones es ", tot)
+            ESC("El artista ", art, " fue el que más reproducciones tuvo ", max)
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS NFDA(arch) HACER
+            tratarCorte()
+            tratarRegistro()
+            LEER(arch, reg)
+        FM
+        corteGen()
+        emitirTot()
+        fina()
+FIN ACCION

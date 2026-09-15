@@ -1,0 +1,116 @@
+Un Casino de la región ha notado un incremento en los costos de las reparaciones de tragamonedas en sus sucursales. Por ello solicitó un informe con la cantidad de reparaciones y sus costos, discriminados según tragamonedas, modelo, marca, sucursal y total general.
+Se dispone de un archivo REPARACIONES, con el siguiente formato. Cada registro representa la reparación de un tragamonedas, tener en cuenta que puede existir más de una reparación por tragamonedas.
+REPARACIONES Ordenado por Cod_Sucursal, Marca, Modelo, Cod_Tragamonedas.
+archivo: Cod_Sucursal - Marca - Modelo - Cod_Tragamonedas - Fecha_Reparacion
+Realice el algoritmo para emitir el informe con los totales solicitados
+
+ACCION ejer ES
+    AMBIENTE
+        FECHA = REGISTRO
+            aa: 1900..2026
+            mm: 1..12
+            dd: 1..31
+        FR
+        
+        rep = REGISTRO
+            codSuc: AN(30)
+            marca: AN(30)
+            modelo: AN(30)
+            codTrag: AN(30)
+            fechaRep: FECHA
+        FR
+
+        arch: ARCHIVO DE rep ORDENADO POR codSuc, marca, modelo, codTrag
+        reg: rep
+
+        resSuc, resMar, resMod, resCodTrag: AN(30)
+        totSuc, totMar, totMod, totCodTrag, tot: entero
+
+        PROCEDIMIENTO corteCodTrag() ES
+            ESC("Para el código de tragamonedas ", resCodTrag, " la cantidad de reparaciones es ", totCodTrag)
+            
+            totMod:= totMod + totCodTrag
+            totCodTrag:= 0
+            resCodTrag:= reg.codTrag
+        FP
+        
+        PROCEDIMIENTO corteModelo() ES
+            corteCodTrag()
+            ESC("Para el modelo de tragamonedas ", resMod, " la cantidad de reparaciones es ", totMod)
+            
+            totMar:= totMar + totMod
+            totMod:= 0
+            resMod:= reg.modelo
+        FP
+        
+        PROCEDIMIENTO corteMarca() ES
+            corteModelo()
+            ESC("Para la marca de tragamonedas ", resMar, " la cantidad de reparaciones es ", totMar)
+            
+            totSuc:= totSuc + totMar
+            totMar:= 0
+            resMar:= reg.marca
+        FP
+        
+        PROCEDIMIENTO corteSuc() ES
+            corteMarca()
+            ESC("Para la sucursal de tragamonedas ", resSuc, " la cantidad de reparaciones es ", totSuc)
+            
+            tot:= tot + totSuc
+            totSuc:= 0
+            resSuc:= reg.codSuc
+        FP        
+
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resSuc <> reg.codSuc) ENTONCES
+                corteSuc()
+            SINO
+                SI (resMar <> reg.marca) ENTONCES
+                    corteMarca()
+                SINO
+                    SI (resMod <> reg.modelo) ENTONCES
+                        corteModelo()
+                    SINO
+                        SI (resCodTrag <> reg.codTrag) ENTONCES
+                            corteCodTrag()
+                        FS
+                    FS
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO tratarRegistro() ES
+            totCodTrag:= totCodTrag + 1
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            LEER(arch, reg)
+            
+            resSuc:= reg.codSuc
+            resMar:= reg.marca
+            resMod:= reg.modelo
+            resCodTrag:= reg.codTrag
+            
+            totSuc:= 0
+            totMar:= 0
+            totMod:= 0
+            totCodTrag:= 0
+            tot:= 0
+        FP
+
+        PROCEDIMIENTO fina() ES
+            ESC("El total de reparaciones es: ", tot)
+            CERRAR(arch)
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS NFDA(arch) HACER
+            tratarCorte()
+            tratarRegistro()
+            LEER(arch, reg)
+        FM
+        corteSuc()
+        fina()
+FIN ACCION

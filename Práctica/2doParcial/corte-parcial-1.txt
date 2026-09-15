@@ -1,0 +1,130 @@
+1er PARCIAL – Julio 2024 - TEMA B
+
+Un supermercado mayorista que cuenta con un sistema de atención en cajas necesita un informe de ventas, para lo cual cuenta con el archivo secuencial VENTAS que contiene información de todos los tickets emitidos durante el mes de JUNIO. Para cada venta se registra:
+VENTAS, Ordenado por Nro de Caja, Forma de pago, Nro de ticket
+Nro de Caja
+Forma de pago
+Nro de ticket
+Fecha de venta
+Cantidad de artículos
+Importe de la venta
+(EF, TD Y TC)
+Nota: EF: efectivo, TD: tarjeta débito y TC: tarjeta crédito.
+Se pide escribir un algoritmo que permita:
+1) Imprimir un informe que muestre por pantalla el total de dinero recaudado por caja y por forma de pago.
+2) Crear un fichero de salida que contenga Nro de caja, total pago (importes) en efectivo y total pago (importes) con tarjetas (TD o TC). (1 registro por caja)
+3) informar cuales son las cajas que tuvieron mayor recaudacion (importes) en efectivo que con tarjetas
+
+ACCION ejer ES
+    AMBIENTE
+        FECHA = REGISTRO
+            aa: 1900..2026
+            mm: 1..12
+            dd: 1..31
+        FR
+        
+        ventas = REGISTRO
+            nroCaja: N(8)
+            formaP: AN(2)
+            nroTic: N(8)
+            fechaV: FECHA
+            cantArt: N(3)
+            importeV: real
+        FR
+
+        ventaSal = REGISTRO
+            nroCaja: N(8)
+            totalE: real
+            totalT: real
+        FR
+
+        arch: ARCHIVO DE ventas ORDENADO POR nroCaja, formaP, nroTic
+        reg: ventas
+
+        archS: ARCHIVO DE ventaSal
+        regS: ventaSal
+
+        resNC: N(8)
+        resFP: AN(2)
+        
+        totFP: real
+        totNC: real
+        totEF: real
+        totTA: real
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            ABRIR /S(archS)
+            LEER(arch, reg)
+            
+            resNC:= reg.nroCaja
+            resFP:= reg.formaP
+            
+            totFP:= 0.0
+            totNC:= 0.0
+            totEF:= 0.0
+            totTA:= 0.0
+        FP
+
+        PROCEDIMIENTO corteFP() ES
+            ESC("El total recaudado para la forma de pago ", resFP, " es: ", totFP)
+
+            totNC:= totNC + totFP
+            totFP:= 0.0
+            resFP:= reg.formaP
+        FP
+
+        PROCEDIMIENTO corteNC() ES
+            corteFP()
+            
+            ESC("El total recaudado para el nro de caja ", resNC, " es: ", totNC)
+
+            SI (totEF > totTA) ENTONCES
+                ESC("la caja ", resNC, " tuvo mayor recaudacion en efectivo")
+            FS
+
+            regS.nroCaja:= resNC
+            regS.totalE:= totEF
+            regS.totalT:= totTA
+            GRABAR(archS, regS)
+            
+            totNC:= 0.0
+            totEF:= 0.0
+            totTA:= 0.0
+            resNC:= reg.nroCaja
+        FP
+
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resNC <> reg.nroCaja) ENTONCES
+                corteNC()
+            SINO
+                SI (resFP <> reg.formaP) ENTONCES
+                    corteFP()
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO tratarRegistro() ES
+            totFP:= totFP + reg.importeV
+            SI (resFP = "EF") ENTONCES
+                totEF:= totEF + reg.importeV
+            SINO
+                totTA:= totTA + reg.importeV
+            FS  
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(arch)
+            CERRAR(archS)
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS NFDA(arch) HACER
+            tratarCorte()
+            tratarRegistro()
+            LEER(arch, reg)
+        FM
+        corteNC()
+        fina()
+FIN ACCION

@@ -1,0 +1,404 @@
+ACCION ejer ES
+    AMBIENTE
+        empleados = REGISTRO
+            dni: entero
+            ape: AN(30)
+        FR
+
+        archA, archB, archS: ARCHIVO DE empleados ORDENADO POR dni
+        regA, regB, regS: empleados
+
+        PROCEDIMIENTO leerA() ES
+            LEER(archA, regA)
+            SI FDA(archA) ENTONCES
+                regA.dni:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO leerB() ES
+            LEER(archB, regB)
+            SI FDA(archB) ENTONCES
+                regB.dni:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(archA)
+            ABRIR E/(archB)
+            ABRIR /S(archS)
+            leerA()
+            leerB()
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(archA)
+            CERRAR(archB)
+            CERRAR(archS)
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS (regA.clave <> HV) o (regB.clave <> HV) HACER
+            SI (regA.clave < regB.clave) ENTONCES
+                regS:= regA
+                GRABAR(archS, regS)
+                leerA()
+            SINO
+                SI (regA.clave > regB.clave) ENTONCES
+                    regS:= regB
+                    GRABAR(archS, regS)
+                    leerB()
+                FS
+            FS
+        FM
+        fina()
+FIN ACCION
+
+ACCION ejer2 ES
+    AMBIENTE
+        repuestos = REGISTRO
+            codProd: entero
+            stock: entero
+        FR
+
+        archA, archB, archS: ARCHIVO DE repuestos ORDENADO POR codProd
+        regA, regB, regS: repuestos
+
+        PROCEDIMIENTO leerA() ES
+            LEER(archA, regA)
+            SI FDA(archA) ENTONCES
+                regA.codProd:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO leerB() ES
+            LEER(archB, regB)
+            SI FDA(archB) ENTONCES
+                regB.codProd:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(archA)
+            ABRIR E/(archB)
+            ABRIR /S(archS)
+            leerA()
+            leerB()
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(archA)
+            CERRAR(archB)
+            CERRAR(archS)
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS (regA.codProd <> HV) o (regB.codProd <> HV) HACER
+            SI (regA.codProd < regB.codProd) ENTONCES
+                regS:= regA
+                GRABAR(archS, regS)
+                leerA()
+            SINO
+                SI (regA.codProd > regB.codProd) ENTONCES
+                    regS:= regB
+                    GRABAR(archS, regS)
+                    leerB()
+                FS
+            FS
+        FM
+        fina()
+FIN ACCION
+
+ACCION ejer3 ES
+    AMBIENTE
+        alumnos = REGISTRO
+            lu: entero
+            ape: AN(30)
+            añoCur: 1..5
+        FR
+
+        archA, archB, archS: ARCHIVO DE alumnos ORDENADO POR lu
+        regA, regB, regS: alumnos
+
+        cantI: entero
+
+        PROCEDIMIENTO leerA() ES
+            LEER(archA, regA)
+            SI FDA(archA) ENTONCES
+                regA.lu:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO leerB() ES
+            LEER(archB, regB)
+            SI FDA(archB) ENTONCES
+                regB.lu:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(archA)
+            ABRIR E/(archB)
+            ABRIR /S(archS)
+            leerA()
+            leerB()
+            cantI:= 0
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(archA)
+            CERRAR(archB)
+            CERRAR(archS)
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS (regA.lu <> HV) o (regB.lu <> HV) HACER
+            SI (regA.lu < regB.lu) ENTONCES
+                SI (regA.añoCur = 1) ENTONCES
+                    cantI:= cantI + 1
+                FS
+                regS:= regA
+                GRABAR(archS, regS)
+                leerA()
+            SINO
+                SI (regA.lu > regB.lu) ENTONCES
+                    SI (regB.añoCur = 1) ENTONCES
+                        cantI:= cantI + 1
+                    FS
+                    regS:= regB
+                    GRABAR(archS, regS)
+                    leerB()
+                FS
+            FS
+        FM
+        ESC("La cantidad de ingresantes fue ", cantI)
+        fina()
+FIN ACCION
+
+ACCION ejer4 ES
+    AMBIENTE
+        ranking = REGISTRO
+            puntos: entero
+            nombre: AN(30)
+        FR
+
+        archA, archB, archS: ARCHIVO DE ranking ORDENADO POR puntos
+        regA, regB, regS: ranking
+
+        PROCEDIMIENTO leerA() ES
+            LEER(archA, regA)
+            SI FDA(archA) ENTONCES
+                regA.puntos:= LV
+            FS
+        FP
+
+        PROCEDIMIENTO leerB() ES
+            LEER(archB, regB)
+            SI FDA(archB) ENTONCES
+                regB.puntos:= LV
+            FS
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(archA)
+            ABRIR E/(archB)
+            ABRIR /S(archS)
+            leerA()
+            leerB()
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(archA)
+            CERRAR(archB)
+            CERRAR(archS)
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS (regA.puntos <> HV) o (regB.puntos <> HV) HACER
+            SI (regA.puntos < regB.puntos) ENTONCES
+                regS:= regB
+                GRABAR(archS, regS)
+                leerB()
+            SINO
+                SI (regA.puntos > regB.puntos) ENTONCES
+                    regS:= regA
+                    GRABAR(archS, regS)
+                    leerA()
+                FS
+            SF
+        FM
+        fina()
+FIN ACCION
+
+ACCION ejer5 ES
+    AMBIENTE
+        libros = REGISTRO
+            nroInv: entero
+            tit: AN(30)
+        FR
+
+        archA, archB, archS: ARCHIVO DE libros ORDENADO POR nroInv
+        regA, regB, regS: libros
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(archA)
+            ABRIR E/(archB)
+            ABRIR /S(archS)
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(archA)
+            CERRAR(archB)
+            CERRAR(archS)
+        FP
+    
+    PROCESO
+        inic()
+        MIENTRAS (NOFDA(archA)) Y (NOFDA(archB)) HACER
+            SI (regA.clave < regB.clave) ENTONCES
+                regS:= regA
+                GRABAR(archS, regS)
+                LEER(archA, regA)
+            SINO
+                SI (regA.clave > regB.clave) ENTONCES
+                    regS:= regB
+                    GRABAR(archS, regS)
+                    LEER(archB, regB)
+                FS
+            FS
+        FM
+
+        MIENTRAS (NOFDA(archA)) HACER
+            regS:= regA
+            GRABAR(archS, regS)
+            LEER(archA, regA)
+        FM
+
+        MIENTRAS (NOFDA(archB)) HACER
+            regS:= regB
+            GRABAR(archS, regS)
+            LEER(archB, regB)
+        FM
+        
+        fina()
+FIN ACCION
+
+ACCION ejer6 ES
+    AMBIENTE
+        vip = REGISTRO
+            nroCli: entero
+            ape: AN(30)
+            puntoA: entero
+        FR
+
+        deudores = REGISTRO
+            nroCli: entero
+            ape: AN(30)
+            saldoD: real
+        FR
+
+        padron = REGISTRO
+            nroCli: entero
+            ape: AN(30)
+            puntos: entero
+            deuda: real
+        FR
+
+        archA: ARCHIVO DE vip ORDENADO POR nroCli
+        regA: vip
+
+        archB: ARCHIVO DE deudores ORDENADO POR nroCli
+        regB: deudores
+
+        archS: ARCHIVO DE padron ORDENADO POR nroCli
+        regS: padron
+
+        PROCEDIMIENTO leerA() ES
+            LEER(archA, regA)
+            SI FDA(archA) ENTONCES
+                regA.nroCli:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO leerB() ES
+            LEER(archB, regB)
+            SI FDA(archB) ENTONCES
+                regB.nroCli:= HV
+            FS
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(archA)
+            ABRIR E/(archB)
+            ABRIR /S(archS)
+            leerA()
+            leerB()
+        FP
+
+        PROCEDIMIENTO fina() ES
+            CERRAR(archA)
+            CERRAR(archB)
+            CERRAR(archS)
+        FP
+        
+    PROCESO
+        inic()
+        MIENTRAS (regA.nroCli <> HV) o (regB.nroCli <> HV) HACER
+            SI (regA.nroCli < regB.nroCli) ENTONCES
+                regS.nroCli:= regA.nroCli
+                regS.ape:= regA.ape
+                regS.puntos:= regA.puntoA
+                regS.deuda:= 0.0
+                GRABAR(archS, regS)
+                leerA()
+            SINO
+                SI (regA.nro > regB.nroCli) ENTONCES
+                    regS.nroCli:= regB.nroCli
+                    regS.ape:= regB.ape
+                    regS.deuda:= regB.saldoD
+                    regS.puntos:= 0.0
+                    GRABAR(archS, regS)
+                    leerB()
+                FS
+            FS
+        FM
+        fina()
+FIN ACCION
+
+ACCION ejer7 ES
+    AMBIENTE
+        dias: ARREGLO [1..7] DE entero
+        
+    PROCESO
+        PARA (i:= 1 HASTA 7) HACER
+            ESC("Ingrese día")
+            LEER(dias[i])
+        FP
+
+        ESC("Los días son: ")
+        PARA (i:= 1 HASTA 7) HACER
+            ESC(dias[i])
+        FP
+FIN ACCION
+
+ACCION ejer8 ES
+    AMBIENTE
+        sumaLlu, prom: real
+        dias: ARREGLO DE [1..7] DE real
+        i: entero
+        
+    PROCESO
+        sumaLlu:= 0.0
+        prom:= 0.0
+
+        PARA (i:= 1 HASTA 7) HACER
+            ESC("Ingrese los días")
+            LEER(dias[i])
+            sumaLlu:= sumaLlu + dias[i]
+        FP
+
+        prom:= sumaLlu / 7
+FIN ACCION

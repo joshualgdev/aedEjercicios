@@ -1,0 +1,128 @@
+Parcial 2 de Julio 2024 - Escenario 1 Fila 2
+
+Los datos históricos de los vehiculos que pasaron por el peaje se encuentra en un archivo con el siguiente formato:
+PEAJE (Ordenado por año, mes, dia, categoria y patente)
+
+ΑÑΟ |  Mes |Dia | Categoria | Patente | Cantidad de pases
+
+Se le solicita
+a. Cantidad total de vehículos que pasaron más 2 veces en el dia, indicando además total por año, mes y dia
+b. Generar un archivo de salida con el siguiente formato, considerando todos los vehiculos que pasaron en una fecha particular que ingresa el usuario.
+
+| ΑΠΟ | Mes | Dia | Categoria | Patente |
+
+ACCION ejer ES
+    AMBIENTE
+        peaje = REGISTRO
+            año: 1900..2026
+            mes: 1..12
+            dia: 1..31
+            cat: 1..5
+            pat: 1..6
+            cantPases: entero
+        FR
+
+        peajeSal = REGISTRO
+            año: 1900..2026
+            mes: 1..12
+            dia: 1..31
+            cat: 1..5
+            pat: 1..6
+        FR
+
+        arch: ARCHIVO DE peaje ORDENADO POR año, mes, dia, cat, pat
+        reg: peaje
+
+        archS: ARCHIVO DE peajeSal
+        regS: peajeSal
+
+        resAño, añoUsuario: 1900..2026
+        resMes, mesUsuario: 1..12
+        resDia, diaUsuario: 1..31
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            ABRIR /S(archS)
+            LEER(arch, reg)
+            
+            resAño:= reg.año
+            resMes:= reg.mes
+            resDia:= reg.dia
+        FP
+
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resAño <> reg.año) ENTONCES
+                corteAño()
+            SINO
+                SI (resMes <> reg.mes) ENTONCES
+                    corteMes()
+                SINO
+                    SI (resDia <> reg.dia) ENTONCES
+                        corteDia()
+                    FS
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO fina() ES
+            ESC("La cantidad total de vehiulos que pasaron más de 2 veces es ", tot)
+            CERRAR(arch)
+            CERRAR(archS)
+        FP
+
+        PROCEDIMIENTO tratarRegistro() ES
+            SI (reg.cantPases > 2) ENTONCES
+                totDia:= totDia + 1
+            FS
+
+            SI (reg.año = añoUsuario) Y (reg.mes = mesUsuario) Y (reg.dia = diaUsuario) ENTONCES
+                regS.año:= reg.año
+                regS.mes:= reg.mes
+                regS.dia:= reg.dia
+                regS.cat:= reg.cat
+                regS.pat:= reg.pat
+                GRABAR(archS, regS)
+            FS
+        FP
+
+        PROCEDIMIENTO corteDia() ES
+            ESC("Para el dia ", resDia, " el total que pasaron más de 2 veces es ", totDia)
+            
+            totMes:= totMes + totDia
+            totDia:= 0
+            resDia:= reg.dia
+        FP
+
+        PROCEDIMIENTO corteMes() ES
+            corteDia()
+            ESC("Para el mes ", resMes, " el total que pasaron más de 2 veces es ", totMes)
+
+            totAño:= totAño + totMes
+            totMes:= 0
+            resMes:= reg.mes
+        FP
+        
+        PROCEDIMIENTO corteAño() ES
+            corteMes()
+            ESC("Para el año ", resAño, " el total que pasaron más de 2 veces es ", totAño)
+
+            tot:= tot + totAño
+            totAño:= 0
+            resAño:= reg.año
+        FP
+        
+    PROCESO
+        inic()
+        ESC("Ingrese una fecha para ver movimientos (formato aa/mm/dd")
+        LEER(añoUsuario)
+        LEER(mesUsuario)
+        LEER(diaUsuario)
+        
+        MIENTRAS NO FDA(arch) HACER
+            tratarCorte()
+            tratarRegistro()
+            LEER(arch, reg)
+        FM
+        corteAño()
+        fina()
+FIN ACCION

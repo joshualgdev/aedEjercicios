@@ -1,0 +1,97 @@
+ACCION ejer ES
+    AMBIENTE
+        stock = REGISTRO
+            codSuc: N(2)
+            rub: AN(20)
+            codArt: N(5)
+            fechaUR = REGISTRO
+                aa: 1900..2026
+                mm: 1..12
+                dd: 1..31
+            FR
+            stockS: N(2)
+            stockA: N(2)
+        FR
+
+        stockS = REGISTRO
+            codSuc: N(2)
+            rub: AN(20)
+            cantArt: N(2)
+        FR
+
+        arch: ARCHIVO DE stock ORDENADO POR codSuc, rub, codArt
+        reg: stock
+
+        archS: ARCHIVO DE stockS
+        regS: stockS
+
+        resCodSuc: N(2)
+        resRub: AN(20)
+        totRub, totCodSuc, tot: entero
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            ABRIR /S(archS)
+            LEER(arch, reg)
+            resCodSuc:= reg.codSuc
+            resRub:= reg.rub
+            totRub:= 0
+            totCodSuc:= 0
+            tot:= 0
+        FP
+
+        PROCEDIMIENTO corteRub() ES
+            ESC("Para el rubro ", resRub, " el total de artículos con stock negativo es ", totRub)
+
+            regS.codSuc:= resCodSuc
+            regS.rub:= resRub
+            regS.cantArt:= totCodSuc
+            GRABAR(archS, regS)
+
+            totCodSuc:= totCodSuc + totRub
+            totRub:= 0
+            resRub:= reg.rub
+        FP
+
+        PROCEDIMIENTO corteCodSuc() ES
+            corteRub()
+            ESC("Para el código de sucursal ", resCodSuc, " el total de articulos con stock negativo es ", totCodSuc)
+
+            tot:= tot + totCodSuc
+            totCodSuc:= 0
+            resCodSuc:= reg.codSuc
+        FP
+
+        PROCEDIMIENTO tratarReg() ES
+            SI (reg.stockA < reg.stockS) ENTONCES
+                totRub:= totRub + 1
+                ESC("Bajo stock: Suc ", reg.codSuc, " rubro: ", reg.rub, " y código de artículo ", reg.codArt)
+            FS
+        FP
+
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resCodSuc <> reg.codSuc) ENTONCES
+                corteCodSuc()
+            SINO
+                SI (resRub <> reg.rub) ENTONCES
+                    corteRub()
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO fina() ES
+            ESC("El total general de artículos con stock negativo es ", tot)
+            CERRAR(arch)
+            CERRAR(archS)
+        FP
+
+    PROCESO
+        inic()
+        MIENTRAS NO FDA(arch) HACER
+            tratarCorte()
+            tratarReg()
+            LEER(arch, reg)
+        FM
+        corteCodSuc()
+        fina()
+FIN ACCION

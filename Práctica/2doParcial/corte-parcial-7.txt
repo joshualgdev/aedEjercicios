@@ -1,0 +1,105 @@
+SERVICIO (Ordenado por SUCURSAL, AREA @ ID_SERV)
+SUCURSAL N(4) | ÁREA N(1) |ID SERV N(6)| DESC AN(45)|CANT CLI N(4)| MONTO N(6.2)
+Se solicita:
+a) Informar el monto facturado por la venta de servicios contratados, teniendo en cuenta la sucursal, el área del servicio y total general, siempre y cuando la cantidad de clientes sea mayor a 100. Si el total facturado por el área 1 en la sucursal tratada supera los $2.000.000, debe informar por pantalla.
+b) Cantidad de contrataciones que no alcanzaron 10 clientes.
+c) Informar si el total facturado por la Sucursal 1 representa más o menos del 20% del Total Facturado por toda la empresa.
+
+ACCION ejer ES
+    AMBIENTE
+        servicio = REGISTRO
+            suc: N(4)
+            area: N(1)
+            idServ: N(6)
+            desc: AN(45)
+            cantCli: N(4)
+            monto: N(6.2)
+        FR
+        
+        arch: ARCHIVO DE servicio ORDENADO POR suc, area, idServ
+        reg: servicio
+
+        resSuc: N(4)
+        resArea: N(1)
+
+        totArea, totSuc, tot, monto50: real
+        cont: entero
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            LEER(arch, reg)
+            resSuc:= reg.suc
+            resArea:= reg.area
+            totArea:= 0.0
+            totSuc:= 0.0
+            tot:= 0.0
+            cont:= 0
+            monto:= 0.0
+        FP
+
+        PROCEDIMIENTO corteArea() ES
+            ESC("Para el area ", resArea, " el monto facturado es: ", totArea)
+            totSuc:= totSuc + totArea
+
+            SI (resArea = 1) Y (totArea > 2000000) ENTONCES
+                ESC("El área 1, supera los 2M")
+            FS
+            
+            totArea:= 0.0
+            resArea:= reg.area
+        FP
+
+        PROCEDIMIENTO corteSuc() ES
+            corteArea()
+            ESC("Para la sucursal ", resSuc, " el monto facturado es ", totSuc)
+
+            SI (resSuc = 50) ENTONCES
+                monto50:= totSuc
+            FS
+            
+            tot:= tot + totSuc
+            totSuc:= 0.0
+            resSuc:= reg.suc
+        FP
+
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resSuc <> reg.suc) ENTONCES
+                corteSuc()
+            SINO
+                SI (resArea <> reg.area) ENTONCES
+                    corteArea()
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO tratarReg() ES
+            SI (reg.cantCli > 100) ENTONCES
+                totArea:= totArea + reg.monto
+            SINO
+                SI (reg.cantCli < 10) ENTONCES
+                    cont:= cont + 1
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO fina() ES
+            ESC("El total facturado es: ", tot)
+            ESC("La cantidad de contrataciones que no alcanzaron los 10 clientes fue ", cont)
+
+            SI (mont50 > (tot * 0.20)) ENTONCES
+                ESC("La sucursal 50 representa más del 20% del total facturado")
+            SINO
+                ESC("La sucursal 50 no representa más del 20% del total facturado")
+            FS
+        FP
+
+    PROCESO
+        inic()
+        MIENTRAS NO FDA(arch) HACER
+            tratarCorte()
+            tratarReg()
+            LEER(arch, reg)
+        FM
+        corteSuc()
+        fina()
+FIN ACCION

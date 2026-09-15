@@ -1,0 +1,50 @@
+ACCION ejer ES
+    AMBIENTE
+        hotel = REGISTRO
+            codCad: AN(15)
+            nivelH: 1..5
+            codH: N(4)
+            nombreH: AN(50)
+            esCiudadSede: booleano
+            cantHab: N(4)
+        FR
+
+        hotelS = REGISTRO
+            codCad: AN(15)
+            cantHab: N(4)
+        FR
+
+        arch: ARCHIVO DE hotel ORDENADO POR codCad, nivelH
+        reg: hotel
+
+        archS: ARCHIVO DE hotelS
+        regS: hotelS
+        
+        resCad: AN(15)
+        resNivel: 1..5
+
+        totCad, totNivel, tot: entero
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            ABRIR /(archS)
+            LEER(arch, reg)
+            resCad:= reg.codCad
+            resNivel:= reg.nivelH
+            totCad:= 0
+            totNivel:= 0
+            tot:= 0
+        FP
+        
+        PROCEDIMIENTO tratarCorte() ES
+        FP
+
+        PROCEDIMIENTO tratarReg() ES
+        FP
+
+        PROCEDIMIENTO fina() ES
+        FP
+
+    
+    PROCESO
+FIN ACCION

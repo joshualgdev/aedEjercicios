@@ -1,0 +1,123 @@
+1er Recuperatorio - Septiembre 2022
+
+SERVICIO (Ordenado por SUCURSAL, AREA e ID_SERV)
+SUCURSAL N(4) | ÁREA N(1) | ID_SERV N(6) | DESC AN(45) |CANT_CLI N(4)|MONTO N(6.2)
+
+Se solicita:
+a) Informar el monto facturado por la venta de servicios contratados, teniendo en cuenta la sucursal, el área del servicio y total general, siempre y cuando la cantidad de clientes sea par.
+b) Generar un archivo de salida con Sucursal y total facturado por el área 1 de la misma.
+| SUCURSAL N(4) | TOTAL N(8,2)
+c) Informar si el total facturado por la Sucursal 50 representa más o menos del 20% del Total Facturado por toda la empresa..
+
+ACCION ejer ES
+    AMBIENTE
+        servicio = REGISTRO
+            suc: N(4)
+            area: N(1)
+            idServ: N(6)
+            desc: AN(45)
+            cantCli: N(4)
+            monto: N(6.2)
+        FR
+
+        servS = REGISTRO
+            suc: N(4)
+            total: N(8.2)
+        FR
+
+        arch: ARCHIVO DE servicio ORDENADO POR suc, area, idServ
+        reg: servicio
+
+        archS: ARCHIVO DE servS
+        regS: servS
+
+        resSuc: N(4)
+        resArea: N(1)
+        totArea, totSuc, tot, monto1, monto50: N(6.2)
+        esArea: logico
+
+        PROCEDIMIENTO corteArea() ES
+            ESC("Para el área ", resArea, " el monto facturado fue: ", totArea)
+
+            SI (resArea = 1) ENTONCES
+                esArea:= verdadero
+                monto1:= totArea
+            FS
+
+            totSuc:= totSuc + totArea
+            totArea:= 0
+            resArea:= reg.area
+        FP
+
+        PROCEDIMIENTO corteSuc() ES
+            corteArea()
+            ESC("Para la sucursal ", resSuc, " el monto facturado fue: ", totSuc)
+
+            SI (esArea) ENTONCES
+                regS.suc:= resSuc
+                regS.total:= monto1
+                GRABAR(archS, regS)
+            FS
+
+            SI (resSuc = 50) ENTONCES
+                monto50:= totSuc
+            FS
+
+            monto1:= 0.0
+            esArea:= falso
+            tot:= tot + totSuc
+            totSuc:= 0
+            resSuc:= reg.suc
+        FP
+
+        PROCEDIMIENTO tratarCorte() ES
+            SI (resSuc <> reg.suc) ENTONCES
+                corteSuc()
+            SINO
+                SI (resArea <> reg.area) ENTONCES
+                    corteArea()
+                FS
+            FS
+        FP
+
+        PROCEDIMIENTO tratarRegistro() ES
+            SI (reg.cantCli MOD 2 = 0) ENTONCES
+                totArea:= totArea + reg.monto
+            FS
+        FP
+
+        PROCEDIMIENTO inic() ES
+            ABRIR E/(arch)
+            ABRIR /S(archS)
+            LEER(arch, reg)
+            resSuc:= reg.suc
+            resArea:= reg.area
+            totArea:= 0.0
+            totSuc:= 0.0
+            tot:= 0.0
+            esArea:= falso
+            monto1:= 0.0
+            monto50:= 0.0
+        FP
+
+        PROCEDIMIENTO fina() ES
+            SI (monto50 > (tot * 0.20)) ENTONCES
+                ESC("La sucursal 50 representa más del 20% del total facturado por la empresa")
+            SINO
+                ESC("La sucursal 50 no representa más del 20% del total facturado por la empresa")
+            FS
+            ESC("El monto facturado total fue: ", tot)
+            CERRAR(arch)
+            CERRAR(archS)
+        FP
+
+    PROCESO
+        inic()
+        MIENTRAS NO FDA(arch) HACER
+            tratarCorte()
+            tratarRegistro()
+            LEER(arch, reg)
+        FM
+        corteSuc()
+        fina()
+FIN ACCION
